@@ -1,0 +1,32 @@
+version: '3.8'
+services:
+  tts-engine:
+    build: .
+    ports:
+      - "5003:5003"
+    volumes:
+      - ./tts-key.json:/app/tts-key.json:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+      - FLASK_ENV=production
+      - DEBUG=False
+      - LOG_LEVEL=INFO
+      - SECRET_KEY=${SECRET_KEY:-change-this-in-production}
+      - PORT=5003
+      - HOST=0.0.0.0
+      - CORS_ORIGINS=*
+      - API_RATE_LIMIT=100
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/tts-key.json
+    healthcheck:
+      test: ["CMD","curl","-f","http://localhost:5003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - tts-network
+
+networks:
+  tts-network:
+    driver: bridge
