@@ -12,7 +12,7 @@ from core.interfaces.use_case_interfaces import UseCaseInterface
 
 class SynthesizeSpeechUseCase(
     UseCaseInterface
-):  # pylint: disable=too-few-public-methods
+):  
     """
     Use case for speech synthesis.
 

@@ -8,7 +8,7 @@ HTTP requests for text-to-speech operations.
 from abc import ABC, abstractmethod
 
 
-class TTSControllerInterface(ABC):  # pylint: disable=too-few-public-methods
+class TTSControllerInterface(ABC):  
     """
     Interface for TTS controllers.
 

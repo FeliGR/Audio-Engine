@@ -33,7 +33,7 @@ def register_extensions(app: Flask) -> None:
             app,
             resources={r"/api/*": {"origins": app.config.get("CORS_ORIGINS", "*")}},
         )
-        # Configure rate limiter with explicit memory storage to avoid warnings
+        
         limiter = Limiter(
             key_func=get_remote_address,
             storage_uri="memory://",

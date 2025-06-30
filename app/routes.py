@@ -3,7 +3,7 @@ Flask Application Routes Module
 
 This module defines the base application routes including the index and health check endpoints.
 These routes provide basic service information and health monitoring capabilities,
-which are useful for deployments and service discovery.
+which are useful for deployments and service discovery for both TTS and STT services.
 """
 
 import time
@@ -30,8 +30,13 @@ def register_routes(app: Flask) -> None:
         return jsonify(
             {
                 "status": "ok",
-                "service": "tts-service",
+                "service": "tts-stt-service",
                 "version": app.config.get("VERSION", "0.1.0"),
+                "endpoints": {
+                    "tts": "/api/tts",
+                    "stt": "/api/stt",
+                    "health": "/health",
+                },
             }
         )
 

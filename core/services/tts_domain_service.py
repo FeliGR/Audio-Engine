@@ -13,7 +13,7 @@ from core.interfaces.tts_domain_service_interface import TTSDomainServiceInterfa
 
 class TTSDomainService(
     TTSDomainServiceInterface
-):  # pylint: disable=too-few-public-methods
+):  
     """
     Domain service for TTS processing.
 
@@ -41,14 +41,14 @@ class TTSDomainService(
             TTSResponse containing synthesis result or error information.
         """
         try:
-            # Validate request
+            
             self._validate_request(request)
 
-            # Process through Google client
+            
             response = self.google_client.synthesize_speech(request)
 
             if not response.success and response.error_message:
-                # Log the specific error for debugging
+                
                 raise TTSProcessingError(
                     f"Speech synthesis failed: {response.error_message}"
                 )
@@ -56,7 +56,7 @@ class TTSDomainService(
             return response
 
         except (TTSValidationError, TTSProcessingError) as tts_error:
-            # Re-raise known TTS exceptions with more context
+            
             return TTSResponse(
                 audio_content="",
                 success=False,
@@ -64,7 +64,7 @@ class TTSDomainService(
             )
 
         except (ValueError, TypeError, AttributeError) as e:
-            # Handle common processing errors
+            
             return TTSResponse(
                 audio_content="",
                 success=False,
@@ -72,7 +72,7 @@ class TTSDomainService(
             )
 
         except (OSError, IOError, RuntimeError) as system_error:
-            # Handle system-level errors that might occur
+            
             return TTSResponse(
                 audio_content="",
                 success=False,
@@ -95,7 +95,7 @@ class TTSDomainService(
         if len(request.text) > 5000:
             raise TTSValidationError("Text exceeds maximum length of 5000 characters")
 
-        # Additional validation can be added here
+        
         if not request.voice_config.language_code:
             raise TTSValidationError("Language code is required")
 

@@ -17,7 +17,7 @@ from core.interfaces.google_tts_client_interface import GoogleTTSClientInterface
 
 class GoogleTTSClient(
     GoogleTTSClientInterface
-):  # pylint: disable=too-few-public-methods
+):  
     """
     Google Cloud Text-to-Speech client implementation.
 
@@ -81,7 +81,7 @@ class GoogleTTSClient(
                 error_message=f"TTS synthesis failed: {str(e)}",
             )
         except (OSError, IOError, RuntimeError) as system_error:
-            # Handle system-level errors that might occur during API calls
+            
             return TTSResponse(
                 audio_content="",
                 success=False,

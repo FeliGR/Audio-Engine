@@ -7,7 +7,9 @@ from typing import Type
 from flask import Flask
 
 from adapters.clients.google_tts_client import GoogleTTSClient
+from adapters.clients.google_stt_client import GoogleSTTClient
 from adapters.controllers.tts_controller import create_tts_blueprint
+from adapters.controllers.stt_controller import create_stt_blueprint
 from adapters.loggers.logger_adapter import app_logger
 from app.extensions import register_extensions
 from app.handlers import (
@@ -18,10 +20,12 @@ from app.handlers import (
 from app.routes import register_routes
 from config import Config, DevelopmentConfig, ProductionConfig
 from usecases.synthesize_speech_use_case import SynthesizeSpeechUseCase
+from usecases.transcribe_speech_use_case import TranscribeSpeechUseCase
 from core.services.tts_domain_service import TTSDomainService
+from core.services.stt_domain_service import STTDomainService
 
 
-class ApplicationFactory:  # pylint: disable=too-few-public-methods
+class ApplicationFactory:  
     """
     Factory class for creating and configuring Flask application instances.
 
@@ -68,15 +72,26 @@ class ApplicationFactory:  # pylint: disable=too-few-public-methods
     @staticmethod
     def _register_use_cases(flask_app):
         """Register use cases and dependencies with the Flask application."""
-        google_client = GoogleTTSClient()
-        tts_service = TTSDomainService(google_client)
+        
+        google_tts_client = GoogleTTSClient()
+        tts_service = TTSDomainService(google_tts_client)
         flask_app.synthesize_speech_use_case = SynthesizeSpeechUseCase(tts_service)
+
+        
+        google_stt_client = GoogleSTTClient()
+        stt_service = STTDomainService(google_stt_client)
+        flask_app.transcribe_speech_use_case = TranscribeSpeechUseCase(stt_service)
 
     @staticmethod
     def _register_blueprints(flask_app):
         """Register blueprints with the Flask application."""
-        blueprint = create_tts_blueprint(flask_app.synthesize_speech_use_case)
-        flask_app.register_blueprint(blueprint)
+        
+        tts_blueprint = create_tts_blueprint(flask_app.synthesize_speech_use_case)
+        flask_app.register_blueprint(tts_blueprint)
+
+        
+        stt_blueprint = create_stt_blueprint(flask_app.transcribe_speech_use_case)
+        flask_app.register_blueprint(stt_blueprint)
 
 
 create_app = ApplicationFactory.create_app

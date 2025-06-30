@@ -24,7 +24,7 @@ class TTSRequestSchema(Schema):
     voiceConfig = fields.Dict(keys=fields.String(), values=fields.Raw(), missing={})
 
 
-class TTSController(TTSControllerInterface):  # pylint: disable=too-few-public-methods
+class TTSController(TTSControllerInterface):  
     """
     TTS Controller implementation.
 

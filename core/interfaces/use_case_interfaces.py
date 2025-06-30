@@ -7,12 +7,12 @@ This module defines the base interface for all use cases in the application.
 from abc import ABC, abstractmethod
 from typing import TypeVar
 
-# Generic type for use case input and output
+
 T = TypeVar("T")
 R = TypeVar("R")
 
 
-class UseCaseInterface(ABC):  # pylint: disable=too-few-public-methods
+class UseCaseInterface(ABC):  
     """
     Base interface for all use cases.
 

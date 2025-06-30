@@ -9,7 +9,7 @@ from abc import ABC, abstractmethod
 from core.domain.tts_model import TTSRequest, TTSResponse
 
 
-class GoogleTTSClientInterface(ABC):  # pylint: disable=too-few-public-methods
+class GoogleTTSClientInterface(ABC):  
     """
     Interface for Google TTS clients.
 

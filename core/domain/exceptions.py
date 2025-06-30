@@ -57,3 +57,56 @@ class TTSConfigurationError(TTSException):
             message: Error message describing the configuration issue.
         """
         super().__init__(message)
+
+
+class STTException(Exception):
+    """Base exception class for STT-related errors."""
+
+    def __init__(self, message: str = "STT operation failed") -> None:
+        """
+        Initialize the STT exception.
+
+        Args:
+            message: Error message describing the exception.
+        """
+        self.message = message
+        super().__init__(self.message)
+
+
+class STTProcessingError(STTException):
+    """Exception raised when STT processing fails."""
+
+    def __init__(self, message: str = "STT processing failed") -> None:
+        """
+        Initialize the STT processing error.
+
+        Args:
+            message: Error message describing the processing failure.
+        """
+        super().__init__(message)
+
+
+class STTValidationError(STTException):
+    """Exception raised when STT request validation fails."""
+
+    def __init__(self, message: str = "STT request validation failed") -> None:
+        """
+        Initialize the STT validation error.
+
+        Args:
+            message: Error message describing the validation failure.
+        """
+        super().__init__(message)
+
+
+class STTConfigurationError(STTException):
+    """Exception raised when STT configuration is invalid."""
+
+    def __init__(self, message: str = "STT configuration error") -> None:
+        """
+        Initialize the STT configuration error.
+
+        Args:
+            message: Error message describing the configuration issue.
+        """
+        super().__init__(message)

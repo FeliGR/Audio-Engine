@@ -71,7 +71,7 @@ class LoggerFactory:
             else:
                 logger.setLevel(log_level)
         except (AttributeError, TypeError) as e:
-            # Use a fallback handler to log the error
+            
             console_handler = logging.StreamHandler(sys.stdout)
             console_handler.setLevel(logging.WARNING)
             logger.addHandler(console_handler)
