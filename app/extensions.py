@@ -18,7 +18,6 @@ from flask_socketio import SocketIO
 from adapters.loggers.logger_adapter import app_logger
 
 
-# Global SocketIO instance
 socketio = SocketIO(cors_allowed_origins="*", async_mode="threading")
 
 
@@ -53,7 +52,6 @@ def register_extensions(app: Flask) -> None:
         )
         limiter.init_app(app)
 
-    # Initialize SocketIO with the app
     socketio.init_app(app)
 
     app_logger.debug("Extensions registered")
