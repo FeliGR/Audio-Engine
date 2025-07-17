@@ -16,7 +16,9 @@ from google.api_core import exceptions as gcp_exceptions
 
 from adapters.loggers.logger_adapter import app_logger
 from core.domain.stt_model import WordTimestamp
-from core.interfaces.google_stt_streaming_client_interface import GoogleSTTStreamingClientInterface
+from core.interfaces.google_stt_streaming_client_interface import (
+    GoogleSTTStreamingClientInterface,
+)
 
 
 class GoogleSTTStreamingClient(GoogleSTTStreamingClientInterface):
@@ -42,7 +44,14 @@ class GoogleSTTStreamingClient(GoogleSTTStreamingClientInterface):
 
     def setup_config(self, config_data: Dict[str, Any]) -> None:
         encoding_str = config_data.get("encoding", "WEBM_OPUS").upper()
-        if encoding_str not in ["WEBM_OPUS","LINEAR16","FLAC","OGG_OPUS","AMR","AMR_WB"]:
+        if encoding_str not in [
+            "WEBM_OPUS",
+            "LINEAR16",
+            "FLAC",
+            "OGG_OPUS",
+            "AMR",
+            "AMR_WB",
+        ]:
             encoding_str = "WEBM_OPUS"
         encoding = getattr(speech.RecognitionConfig.AudioEncoding, encoding_str)
 
@@ -52,8 +61,10 @@ class GoogleSTTStreamingClient(GoogleSTTStreamingClientInterface):
             language_code=config_data.get("languageCode", "en-US"),
             max_alternatives=config_data.get("maxAlternatives", 1),
             enable_word_time_offsets=config_data.get("enableWordTimeOffsets", False),
-            enable_automatic_punctuation=config_data.get("enableAutomaticPunctuation", True),
-            model=config_data.get("model", "latest_long")
+            enable_automatic_punctuation=config_data.get(
+                "enableAutomaticPunctuation", True
+            ),
+            model=config_data.get("model", "latest_long"),
         )
         self.streaming_config = speech.StreamingRecognitionConfig(
             config=self.config,
@@ -82,22 +93,22 @@ class GoogleSTTStreamingClient(GoogleSTTStreamingClientInterface):
                 app_logger.error("Error in audio generator: %s", e)
                 break
 
-    async def start_streaming(self, result_callback: Callable[[Dict[str, Any]], None]) -> None:
+    async def start_streaming(
+        self, result_callback: Callable[[Dict[str, Any]], None]
+    ) -> None:
         if not self.config or not self.streaming_config:
             raise ValueError("Configuration not set. Call setup_config() first.")
         self.is_streaming = True
 
         def request_generator():
-            
+
             for audio_chunk in self._audio_generator():
                 yield speech.StreamingRecognizeRequest(audio_content=audio_chunk)
 
         app_logger.info("Starting STT streaming recognition")
 
-        
         responses = self.client.streaming_recognize(
-            self.streaming_config,
-            request_generator()
+            self.streaming_config, request_generator()
         )
 
         try:
@@ -105,28 +116,31 @@ class GoogleSTTStreamingClient(GoogleSTTStreamingClientInterface):
                 if self._stop_event.is_set():
                     break
 
-                
-                if getattr(response, "speech_event_type", None) == \
-                   speech.StreamingRecognizeResponse.SpeechEventType.END_OF_SINGLE_UTTERANCE:
+                if (
+                    getattr(response, "speech_event_type", None)
+                    == speech.StreamingRecognizeResponse.SpeechEventType.END_OF_SINGLE_UTTERANCE
+                ):
                     await result_callback({"type": "end_of_utterance"})
                     continue
 
-                
                 for result in response.results:
                     if not result.alternatives:
                         continue
                     alt = result.alternatives[0]
                     ts = None
                     if hasattr(alt, "words") and alt.words:
-                        ts = [{
-                            "word": w.word,
-                            "startTime": w.start_time.total_seconds(),
-                            "endTime": w.end_time.total_seconds()
-                        } for w in alt.words]
+                        ts = [
+                            {
+                                "word": w.word,
+                                "startTime": w.start_time.total_seconds(),
+                                "endTime": w.end_time.total_seconds(),
+                            }
+                            for w in alt.words
+                        ]
                     payload = {
                         "type": "final_result" if result.is_final else "interim_result",
                         "transcript": alt.transcript,
-                        "confidence": getattr(alt, "confidence", 0.0)
+                        "confidence": getattr(alt, "confidence", 0.0),
                     }
                     if result.is_final:
                         payload["wordTimestamps"] = ts
@@ -134,7 +148,9 @@ class GoogleSTTStreamingClient(GoogleSTTStreamingClientInterface):
 
         except gcp_exceptions.GoogleAPICallError as e:
             app_logger.error("Google API error during streaming: %s", e)
-            await result_callback({"type": "error", "message": f"Google API error: {e}"})
+            await result_callback(
+                {"type": "error", "message": f"Google API error: {e}"}
+            )
         except Exception as e:
             app_logger.error("Unexpected error during streaming: %s", e)
             await result_callback({"type": "error", "message": f"Streaming error: {e}"})

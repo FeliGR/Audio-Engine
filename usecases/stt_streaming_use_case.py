@@ -51,7 +51,6 @@ class STTStreamingUseCase(UseCaseInterface):
             result_callback: Function to call with recognition results.
         """
 
-        # Create async wrapper for the callback if it's not async
         async def async_callback(result: Dict[str, Any]) -> None:
             if asyncio.iscoroutinefunction(result_callback):
                 await result_callback(result)

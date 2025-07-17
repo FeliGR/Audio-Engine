@@ -19,7 +19,7 @@ from usecases.stt_streaming_use_case import STTStreamingUseCase
 
 class STTStreamingConfigSchema(Schema):
     """Schema for validating STT streaming configuration data."""
-    
+
     encoding = fields.String(missing="WEBM_OPUS")
     sampleRateHertz = fields.Integer(missing=48000)
     languageCode = fields.String(missing="en-US")
@@ -56,39 +56,39 @@ class STTStreamingController(STTControllerInterface):
 
     def _register_handlers(self) -> None:
         """Register WebSocket event handlers."""
-        
-        @self.socketio.on('connect', namespace='/api/stt/stream')
+
+        @self.socketio.on("connect", namespace="/api/stt/stream")
         def handle_connect(auth=None):
             """Handle client connection."""
             client_id = self._get_client_id()
             self.logger.info("STT streaming client connected: %s", client_id)
-            
-            
-            self.active_sessions[client_id] = {
-                'configured': False,
-                'streaming': False
-            }
-            
-            emit('connected', {'status': 'connected', 'message': 'Ready for streaming'})
 
-        @self.socketio.on('disconnect', namespace='/api/stt/stream')
+            self.active_sessions[client_id] = {"configured": False, "streaming": False}
+
+            emit("connected", {"status": "connected", "message": "Ready for streaming"})
+
+        @self.socketio.on("disconnect", namespace="/api/stt/stream")
         def handle_disconnect():
             """Handle client disconnection with graceful cleanup."""
             try:
                 client_id = self._get_client_id()
-                
+
                 if client_id in self.active_sessions:
-                    
-                    self.use_case.stop_streaming()  
-                    
+
+                    self.use_case.stop_streaming()
+
                     del self.active_sessions[client_id]
-                    self.logger.info(f"Client {client_id} disconnected and session cleaned up")
+                    self.logger.info(
+                        f"Client {client_id} disconnected and session cleaned up"
+                    )
                 else:
-                    self.logger.info(f"Client {client_id} disconnected (no active session)")
-                    
+                    self.logger.info(
+                        f"Client {client_id} disconnected (no active session)"
+                    )
+
             except Exception as e:
                 self.logger.error(f"Error handling disconnect: {str(e)}")
-                
+
                 try:
                     client_id = self._get_client_id()
                     if client_id in self.active_sessions:
@@ -96,113 +96,127 @@ class STTStreamingController(STTControllerInterface):
                 except Exception:
                     pass
 
-        @self.socketio.on('config', namespace='/api/stt/stream')
+        @self.socketio.on("config", namespace="/api/stt/stream")
         def handle_config(data):
             """Handle streaming configuration."""
             client_id = self._get_client_id()
-            
+
             try:
-                
-                config_data = self.schema.load(data.get('config', {}))
-                
-                
+
+                config_data = self.schema.load(data.get("config", {}))
+
                 self.use_case.execute(config_data)
-                
-                
+
                 if client_id in self.active_sessions:
-                    self.active_sessions[client_id]['configured'] = True
-                    
-                    
+                    self.active_sessions[client_id]["configured"] = True
+
                     def result_callback(result: Dict[str, Any]) -> None:
                         """Send result to client via Socket.IO."""
                         try:
-                            event_type = result.get('type', 'result')
-                            
-                            self.socketio.emit(event_type, result, 
-                                             room=client_id, namespace='/api/stt/stream')
+                            event_type = result.get("type", "result")
+
+                            self.socketio.emit(
+                                event_type,
+                                result,
+                                room=client_id,
+                                namespace="/api/stt/stream",
+                            )
                         except Exception as e:
-                            self.logger.error(f"Error sending result to client {client_id}: {str(e)}")
-                    
-                    
+                            self.logger.error(
+                                f"Error sending result to client {client_id}: {str(e)}"
+                            )
+
                     threading.Thread(
                         target=self._start_streaming_thread,
                         args=(client_id, result_callback),
-                        daemon=True
+                        daemon=True,
                     ).start()
-                    
-                    self.logger.info(f"Client {client_id} configured and streaming started")
-                    emit('configured', {'status': 'success', 'message': 'Streaming configured'})
-                
+
+                    self.logger.info(
+                        f"Client {client_id} configured and streaming started"
+                    )
+                    emit(
+                        "configured",
+                        {"status": "success", "message": "Streaming configured"},
+                    )
+
             except ValidationError as e:
                 self.logger.error(f"Configuration validation error: {e.messages}")
-                emit('error', {'status': 'error', 'message': 'Invalid configuration', 'errors': e.messages})
+                emit(
+                    "error",
+                    {
+                        "status": "error",
+                        "message": "Invalid configuration",
+                        "errors": e.messages,
+                    },
+                )
             except Exception as e:
                 self.logger.error(f"Configuration error: {str(e)}")
-                emit('error', {'status': 'error', 'message': str(e)})
+                emit("error", {"status": "error", "message": str(e)})
 
-        @self.socketio.on('audio', namespace='/api/stt/stream')
+        @self.socketio.on("audio", namespace="/api/stt/stream")
         def handle_audio(data):
             """Handle incoming audio data."""
             client_id = self._get_client_id()
-            
+
             try:
                 if client_id not in self.active_sessions:
-                    emit('error', {
-                        'status': 'error', 
-                        'message': 'No active session found'
-                    })
+                    emit(
+                        "error",
+                        {"status": "error", "message": "No active session found"},
+                    )
                     return
 
-                if not self.active_sessions[client_id].get('configured'):
-                    emit('error', {
-                        'status': 'error', 
-                        'message': 'Session not configured'
-                    })
+                if not self.active_sessions[client_id].get("configured"):
+                    emit(
+                        "error",
+                        {"status": "error", "message": "Session not configured"},
+                    )
                     return
 
-                
-                audio_data = data.get('data')  
+                audio_data = data.get("data")
                 if not audio_data:
-                    emit('error', {
-                        'status': 'error', 
-                        'message': 'No audio data received'
-                    })
+                    emit(
+                        "error",
+                        {"status": "error", "message": "No audio data received"},
+                    )
                     return
 
-                
                 try:
                     if isinstance(audio_data, list):
                         audio_bytes = bytes(audio_data)
                     else:
                         audio_bytes = audio_data
                 except Exception as e:
-                    emit('error', {
-                        'status': 'error', 
-                        'message': f'Invalid audio data format: {str(e)}'
-                    })
+                    emit(
+                        "error",
+                        {
+                            "status": "error",
+                            "message": f"Invalid audio data format: {str(e)}",
+                        },
+                    )
                     return
 
-                
                 self.use_case.add_audio_data(audio_bytes)
-                
+
             except Exception as e:
                 self.logger.error(f"Audio processing error: {str(e)}")
-                emit('error', {'status': 'error', 'message': str(e)})
+                emit("error", {"status": "error", "message": str(e)})
 
-        @self.socketio.on('stop', namespace='/api/stt/stream')
+        @self.socketio.on("stop", namespace="/api/stt/stream")
         def handle_stop():
             """Handle stop streaming request."""
             client_id = self._get_client_id()
-            
+
             if client_id in self.active_sessions:
-                self.use_case.stop_streaming()  
-                self.active_sessions[client_id]['streaming'] = False
+                self.use_case.stop_streaming()
+                self.active_sessions[client_id]["streaming"] = False
                 self.logger.info(f"Streaming stopped for client {client_id}")
-                emit('stopped', {'status': 'stopped', 'message': 'Streaming stopped'})
+                emit("stopped", {"status": "stopped", "message": "Streaming stopped"})
 
     def transcribe_speech(self):
         """Handle STT transcription requests (not used for streaming)."""
-        return {'error': 'Use streaming endpoint instead'}, 400
+        return {"error": "Use streaming endpoint instead"}, 400
 
     def _get_client_id(self) -> str:
         """Get the client ID from the current request context."""
@@ -210,58 +224,56 @@ class STTStreamingController(STTControllerInterface):
             return request.sid
         except Exception:
             return "unknown"
-    
+
     def _start_streaming_thread(self, client_id: str, callback) -> None:
         """Start streaming in a background thread."""
         try:
             if client_id in self.active_sessions:
-                self.active_sessions[client_id]['streaming'] = True
-                
-                
+                self.active_sessions[client_id]["streaming"] = True
+
                 import asyncio
+
                 try:
-                    
+
                     loop = asyncio.get_event_loop()
                     if loop.is_running():
-                        
+
                         loop = asyncio.new_event_loop()
                         asyncio.set_event_loop(loop)
                 except RuntimeError:
-                    
+
                     loop = asyncio.new_event_loop()
                     asyncio.set_event_loop(loop)
-                
+
                 try:
-                    
+
                     loop.run_until_complete(self.use_case.start_streaming(callback))
                 except Exception as e:
                     self.logger.error(f"Error in streaming loop: {str(e)}")
-                    
-                    callback({
-                        "type": "error",
-                        "message": f"Streaming error: {str(e)}"
-                    })
+
+                    callback({"type": "error", "message": f"Streaming error: {str(e)}"})
                 finally:
-                    
+
                     if client_id in self.active_sessions:
-                        self.active_sessions[client_id]['streaming'] = False
+                        self.active_sessions[client_id]["streaming"] = False
                     try:
                         loop.close()
                     except:
                         pass
-                    
+
         except Exception as e:
             self.logger.error(f"Streaming thread error: {str(e)}")
             if client_id in self.active_sessions:
-                self.active_sessions[client_id]['streaming'] = False
-            
-            callback({
-                "type": "error", 
-                "message": f"Failed to start streaming: {str(e)}"
-            })
+                self.active_sessions[client_id]["streaming"] = False
+
+            callback(
+                {"type": "error", "message": f"Failed to start streaming: {str(e)}"}
+            )
 
 
-def register_routes(socketio: SocketIO, use_case: STTStreamingUseCase) -> STTStreamingController:
+def register_routes(
+    socketio: SocketIO, use_case: STTStreamingUseCase
+) -> STTStreamingController:
     """
     Register STT streaming routes.
 
@@ -276,7 +288,9 @@ def register_routes(socketio: SocketIO, use_case: STTStreamingUseCase) -> STTStr
     return controller
 
 
-def create_stt_streaming_blueprint(socketio: SocketIO, use_case: STTStreamingUseCase) -> Blueprint:
+def create_stt_streaming_blueprint(
+    socketio: SocketIO, use_case: STTStreamingUseCase
+) -> Blueprint:
     """
     Create STT streaming blueprint with WebSocket support.
 
@@ -287,37 +301,36 @@ def create_stt_streaming_blueprint(socketio: SocketIO, use_case: STTStreamingUse
     Returns:
         Blueprint: Configured blueprint for STT streaming.
     """
-    blueprint = Blueprint('stt_streaming', __name__)
-    
-    
+    blueprint = Blueprint("stt_streaming", __name__)
+
     STTStreamingController(socketio, use_case)
-    
-    @blueprint.route('/api/stt/stream/info', methods=['GET'])
+
+    @blueprint.route("/api/stt/stream/info", methods=["GET"])
     def stream_info():
         """Get streaming endpoint information."""
         return {
-            'endpoint': '/api/stt/stream',
-            'protocol': 'WebSocket',
-            'events': {
-                'config': 'Send streaming configuration',
-                'audio': 'Send audio data chunks', 
-                'stop': 'Stop streaming',
-                'interim_result': 'Receive interim transcription',
-                'final_result': 'Receive final transcription',
-                'end_of_utterance': 'End of speech detected',
-                'error': 'Error messages'
+            "endpoint": "/api/stt/stream",
+            "protocol": "WebSocket",
+            "events": {
+                "config": "Send streaming configuration",
+                "audio": "Send audio data chunks",
+                "stop": "Stop streaming",
+                "interim_result": "Receive interim transcription",
+                "final_result": "Receive final transcription",
+                "end_of_utterance": "End of speech detected",
+                "error": "Error messages",
             },
-            'sample_config': {
-                'encoding': 'WEBM_OPUS',
-                'sampleRateHertz': 48000,
-                'languageCode': 'en-US',
-                'interimResults': True,
-                'singleUtterance': False,
-                'enableWordTimeOffsets': False,
-                'maxAlternatives': 1,
-                'enableAutomaticPunctuation': True,
-                'model': 'latest_long'
-            }
+            "sample_config": {
+                "encoding": "WEBM_OPUS",
+                "sampleRateHertz": 48000,
+                "languageCode": "en-US",
+                "interimResults": True,
+                "singleUtterance": False,
+                "enableWordTimeOffsets": False,
+                "maxAlternatives": 1,
+                "enableAutomaticPunctuation": True,
+                "model": "latest_long",
+            },
         }
-    
+
     return blueprint
