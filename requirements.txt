@@ -19,7 +19,6 @@ google-cloud-texttospeech==2.16.3
 google-cloud-speech==2.21.0
 
 # Production Server
-gunicorn==21.2.0
 eventlet==0.33.3
 
 # Environment and Configuration

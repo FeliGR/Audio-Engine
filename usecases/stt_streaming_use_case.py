@@ -9,7 +9,9 @@ import asyncio
 from typing import Dict, Any, Callable
 
 from core.domain.stt_streaming_model import STTStreamingConfig, AudioChunk
-from core.interfaces.google_stt_streaming_client_interface import GoogleSTTStreamingClientInterface
+from core.interfaces.google_stt_streaming_client_interface import (
+    GoogleSTTStreamingClientInterface,
+)
 from core.interfaces.use_case_interfaces import UseCaseInterface
 
 
@@ -39,20 +41,23 @@ class STTStreamingUseCase(UseCaseInterface):
         """
         self.streaming_client.setup_config(request)
 
-    async def start_streaming(self, result_callback: Callable[[Dict[str, Any]], None]) -> None:
+    async def start_streaming(
+        self, result_callback: Callable[[Dict[str, Any]], None]
+    ) -> None:
         """
         Start streaming recognition.
 
         Args:
             result_callback: Function to call with recognition results.
         """
+
         # Create async wrapper for the callback if it's not async
         async def async_callback(result: Dict[str, Any]) -> None:
             if asyncio.iscoroutinefunction(result_callback):
                 await result_callback(result)
             else:
                 result_callback(result)
-        
+
         await self.streaming_client.start_streaming(async_callback)
 
     def add_audio_data(self, audio_data: bytes) -> None:

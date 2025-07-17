@@ -11,9 +11,7 @@ from core.interfaces.google_tts_client_interface import GoogleTTSClientInterface
 from core.interfaces.tts_domain_service_interface import TTSDomainServiceInterface
 
 
-class TTSDomainService(
-    TTSDomainServiceInterface
-):  
+class TTSDomainService(TTSDomainServiceInterface):
     """
     Domain service for TTS processing.
 
@@ -41,14 +39,13 @@ class TTSDomainService(
             TTSResponse containing synthesis result or error information.
         """
         try:
-            
+
             self._validate_request(request)
 
-            
             response = self.google_client.synthesize_speech(request)
 
             if not response.success and response.error_message:
-                
+
                 raise TTSProcessingError(
                     f"Speech synthesis failed: {response.error_message}"
                 )
@@ -56,7 +53,7 @@ class TTSDomainService(
             return response
 
         except (TTSValidationError, TTSProcessingError) as tts_error:
-            
+
             return TTSResponse(
                 audio_content="",
                 success=False,
@@ -64,7 +61,7 @@ class TTSDomainService(
             )
 
         except (ValueError, TypeError, AttributeError) as e:
-            
+
             return TTSResponse(
                 audio_content="",
                 success=False,
@@ -72,7 +69,7 @@ class TTSDomainService(
             )
 
         except (OSError, IOError, RuntimeError) as system_error:
-            
+
             return TTSResponse(
                 audio_content="",
                 success=False,
@@ -95,7 +92,6 @@ class TTSDomainService(
         if len(request.text) > 5000:
             raise TTSValidationError("Text exceeds maximum length of 5000 characters")
 
-        
         if not request.voice_config.language_code:
             raise TTSValidationError("Language code is required")
 

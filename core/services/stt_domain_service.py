@@ -11,9 +11,7 @@ from core.interfaces.google_stt_client_interface import GoogleSTTClientInterface
 from core.interfaces.stt_domain_service_interface import STTDomainServiceInterface
 
 
-class STTDomainService(
-    STTDomainServiceInterface
-):  
+class STTDomainService(STTDomainServiceInterface):
     """
     Domain service for STT processing.
 
@@ -41,14 +39,13 @@ class STTDomainService(
             STTResponse containing transcription result or error information.
         """
         try:
-            
+
             self._validate_request(request)
 
-            
             response = self.google_client.transcribe_speech(request)
 
             if not response.success and response.error_message:
-                
+
                 raise STTProcessingError(
                     f"Speech transcription failed: {response.error_message}"
                 )
@@ -56,7 +53,7 @@ class STTDomainService(
             return response
 
         except (STTValidationError, STTProcessingError) as stt_error:
-            
+
             return STTResponse(
                 transcription="",
                 confidence=0.0,
@@ -65,7 +62,7 @@ class STTDomainService(
             )
 
         except (ValueError, TypeError, AttributeError) as e:
-            
+
             return STTResponse(
                 transcription="",
                 confidence=0.0,
@@ -74,7 +71,7 @@ class STTDomainService(
             )
 
         except (OSError, IOError, RuntimeError) as system_error:
-            
+
             return STTResponse(
                 transcription="",
                 confidence=0.0,
@@ -101,7 +98,6 @@ class STTDomainService(
         if request.sample_rate < 8000 or request.sample_rate > 48000:
             raise STTValidationError("Sample rate must be between 8000 and 48000 Hz")
 
-        
         if not request.language:
             raise STTValidationError("Language code is required")
 

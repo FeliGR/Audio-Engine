@@ -9,7 +9,7 @@ from abc import ABC, abstractmethod
 from core.domain.tts_model import TTSRequest, TTSResponse
 
 
-class TTSDomainServiceInterface(ABC):  
+class TTSDomainServiceInterface(ABC):
     """
     Interface for TTS domain services.
 

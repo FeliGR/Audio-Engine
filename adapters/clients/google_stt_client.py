@@ -16,9 +16,7 @@ from core.domain.stt_model import STTRequest, STTResponse, WordTimestamp
 from core.interfaces.google_stt_client_interface import GoogleSTTClientInterface
 
 
-class GoogleSTTClient(
-    GoogleSTTClientInterface
-):  
+class GoogleSTTClient(GoogleSTTClientInterface):
     """
     Google Cloud Speech-to-Text client implementation.
 
@@ -26,7 +24,6 @@ class GoogleSTTClient(
     Google Cloud Speech-to-Text API.
     """
 
-    
     FORMAT_MAPPING: Dict[str, Any] = {
         "webm": speech.RecognitionConfig.AudioEncoding.WEBM_OPUS,
         "wav": speech.RecognitionConfig.AudioEncoding.LINEAR16,
@@ -58,10 +55,9 @@ class GoogleSTTClient(
             STTResponse containing the transcription or error information.
         """
         try:
-            
+
             audio_data = base64.b64decode(request.audio_data)
 
-            
             encoding = self.FORMAT_MAPPING.get(request.format.lower())
             if not encoding:
                 return STTResponse(
@@ -71,7 +67,6 @@ class GoogleSTTClient(
                     error_message=f"Unsupported audio format: {request.format}",
                 )
 
-            
             config = speech.RecognitionConfig(
                 encoding=encoding,
                 sample_rate_hertz=request.sample_rate,
@@ -81,10 +76,8 @@ class GoogleSTTClient(
                 model=request.model,
             )
 
-            
             audio = speech.RecognitionAudio(content=audio_data)
 
-            
             response = self.client.recognize(config=config, audio=audio)
 
             if response.results:
@@ -93,7 +86,6 @@ class GoogleSTTClient(
                 transcription = alternative.transcript
                 confidence = alternative.confidence or 0.0
 
-                
                 word_timestamps = None
                 if request.enable_word_timestamps and hasattr(alternative, "words"):
                     word_timestamps = [
@@ -130,7 +122,7 @@ class GoogleSTTClient(
                 error_message=f"STT transcription failed: {str(e)}",
             )
         except (UnicodeDecodeError, TypeError) as decode_error:
-            
+
             return STTResponse(
                 transcription="",
                 confidence=0.0,
@@ -145,7 +137,7 @@ class GoogleSTTClient(
                 error_message=f"Invalid request parameters: {str(value_error)}",
             )
         except (OSError, IOError, RuntimeError) as system_error:
-            
+
             return STTResponse(
                 transcription="",
                 confidence=0.0,

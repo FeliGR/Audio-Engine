@@ -9,7 +9,7 @@ from abc import ABC, abstractmethod
 from core.domain.stt_model import STTRequest, STTResponse
 
 
-class STTDomainServiceInterface(ABC):  
+class STTDomainServiceInterface(ABC):
     """
     Interface for STT domain services.
 

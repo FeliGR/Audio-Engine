@@ -10,9 +10,7 @@ from core.interfaces.stt_domain_service_interface import STTDomainServiceInterfa
 from core.interfaces.use_case_interfaces import UseCaseInterface
 
 
-class TranscribeSpeechUseCase(
-    UseCaseInterface
-):  
+class TranscribeSpeechUseCase(UseCaseInterface):
     """
     Use case for speech transcription.
 

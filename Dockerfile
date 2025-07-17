@@ -29,4 +29,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:5003/health || exit 1
 
 
-CMD ["gunicorn", "--bind", "0.0.0.0:5003", "--workers", "1", "--log-level", "info", "app:app"]
+CMD ["python", "run.py"]

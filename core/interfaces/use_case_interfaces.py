@@ -12,7 +12,7 @@ T = TypeVar("T")
 R = TypeVar("R")
 
 
-class UseCaseInterface(ABC):  
+class UseCaseInterface(ABC):
     """
     Base interface for all use cases.
 

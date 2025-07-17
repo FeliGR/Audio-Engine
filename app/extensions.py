@@ -19,7 +19,7 @@ from adapters.loggers.logger_adapter import app_logger
 
 
 # Global SocketIO instance
-socketio = SocketIO(cors_allowed_origins="*", async_mode='threading')
+socketio = SocketIO(cors_allowed_origins="*", async_mode="threading")
 
 
 def register_extensions(app: Flask) -> None:
@@ -40,10 +40,10 @@ def register_extensions(app: Flask) -> None:
             resources={
                 r"/api/*": {"origins": app.config.get("CORS_ORIGINS", "*")},
                 r"/health": {"origins": app.config.get("CORS_ORIGINS", "*")},
-                r"/": {"origins": app.config.get("CORS_ORIGINS", "*")}
+                r"/": {"origins": app.config.get("CORS_ORIGINS", "*")},
             },
         )
-        
+
         limiter = Limiter(
             key_func=get_remote_address,
             storage_uri="memory://",
@@ -52,17 +52,17 @@ def register_extensions(app: Flask) -> None:
             ),
         )
         limiter.init_app(app)
-    
+
     # Initialize SocketIO with the app
     socketio.init_app(app)
-    
+
     app_logger.debug("Extensions registered")
 
 
 def get_socketio() -> SocketIO:
     """
     Get the global SocketIO instance.
-    
+
     Returns:
         SocketIO: The configured SocketIO instance.
     """

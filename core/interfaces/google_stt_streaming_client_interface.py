@@ -38,7 +38,9 @@ class GoogleSTTStreamingClientInterface(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def start_streaming(self, result_callback: Callable[[Dict[str, Any]], None]) -> None:
+    async def start_streaming(
+        self, result_callback: Callable[[Dict[str, Any]], None]
+    ) -> None:
         """
         Start streaming speech recognition.
 

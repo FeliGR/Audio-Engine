@@ -29,7 +29,7 @@ class STTRequestSchema(Schema):
     model = fields.String(missing="latest_long")
 
 
-class STTController(STTControllerInterface):  
+class STTController(STTControllerInterface):
     """
     STT Controller implementation.
 
@@ -77,7 +77,6 @@ class STTController(STTControllerInterface):
                     "confidence": response.confidence,
                 }
 
-                
                 if response.word_timestamps:
                     response_data["word_timestamps"] = [
                         {

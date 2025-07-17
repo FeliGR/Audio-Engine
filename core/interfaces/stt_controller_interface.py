@@ -8,7 +8,7 @@ HTTP requests for speech-to-text operations.
 from abc import ABC, abstractmethod
 
 
-class STTControllerInterface(ABC):  
+class STTControllerInterface(ABC):
     """
     Interface for STT controllers.
 

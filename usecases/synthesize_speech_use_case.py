@@ -10,9 +10,7 @@ from core.interfaces.tts_domain_service_interface import TTSDomainServiceInterfa
 from core.interfaces.use_case_interfaces import UseCaseInterface
 
 
-class SynthesizeSpeechUseCase(
-    UseCaseInterface
-):  
+class SynthesizeSpeechUseCase(UseCaseInterface):
     """
     Use case for speech synthesis.
 

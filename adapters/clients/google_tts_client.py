@@ -15,9 +15,7 @@ from core.domain.tts_model import TTSRequest, TTSResponse
 from core.interfaces.google_tts_client_interface import GoogleTTSClientInterface
 
 
-class GoogleTTSClient(
-    GoogleTTSClientInterface
-):  
+class GoogleTTSClient(GoogleTTSClientInterface):
     """
     Google Cloud Text-to-Speech client implementation.
 
@@ -81,7 +79,7 @@ class GoogleTTSClient(
                 error_message=f"TTS synthesis failed: {str(e)}",
             )
         except (OSError, IOError, RuntimeError) as system_error:
-            
+
             return TTSResponse(
                 audio_content="",
                 success=False,

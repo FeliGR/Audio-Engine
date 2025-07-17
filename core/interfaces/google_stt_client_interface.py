@@ -9,7 +9,7 @@ from abc import ABC, abstractmethod
 from core.domain.stt_model import STTRequest, STTResponse
 
 
-class GoogleSTTClientInterface(ABC):  
+class GoogleSTTClientInterface(ABC):
     """
     Interface for Google STT clients.
 

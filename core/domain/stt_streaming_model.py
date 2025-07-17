@@ -40,13 +40,11 @@ class STTStreamingConfig:
         """Validate configuration after initialization."""
         if self.sample_rate_hertz <= 0:
             raise ValueError("Sample rate must be positive")
-        
+
         if self.max_alternatives < 1:
             raise ValueError("Max alternatives must be at least 1")
-        
-        valid_encodings = {
-            "WEBM_OPUS", "LINEAR16", "FLAC", "OGG_OPUS", "AMR", "AMR_WB"
-        }
+
+        valid_encodings = {"WEBM_OPUS", "LINEAR16", "FLAC", "OGG_OPUS", "AMR", "AMR_WB"}
         if self.encoding.upper() not in valid_encodings:
             raise ValueError(f"Unsupported encoding: {self.encoding}")
 
@@ -77,7 +75,7 @@ class STTStreamingResult:
         valid_types = {"interim", "final", "end_of_utterance", "error"}
         if self.result_type not in valid_types:
             raise ValueError(f"Invalid result type: {self.result_type}")
-        
+
         if self.confidence is not None and not (0.0 <= self.confidence <= 1.0):
             raise ValueError("Confidence must be between 0.0 and 1.0")
 
