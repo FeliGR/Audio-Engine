@@ -8,10 +8,12 @@ from flask import Flask
 
 from adapters.clients.google_tts_client import GoogleTTSClient
 from adapters.clients.google_stt_client import GoogleSTTClient
+from adapters.clients.google_stt_streaming_client import GoogleSTTStreamingClient
 from adapters.controllers.tts_controller import create_tts_blueprint
 from adapters.controllers.stt_controller import create_stt_blueprint
+from adapters.controllers.stt_streaming_controller import create_stt_streaming_blueprint
 from adapters.loggers.logger_adapter import app_logger
-from app.extensions import register_extensions
+from app.extensions import register_extensions, get_socketio
 from app.handlers import (
     register_error_handlers,
     register_request_hooks,
@@ -21,6 +23,7 @@ from app.routes import register_routes
 from config import Config, DevelopmentConfig, ProductionConfig
 from usecases.synthesize_speech_use_case import SynthesizeSpeechUseCase
 from usecases.transcribe_speech_use_case import TranscribeSpeechUseCase
+from usecases.stt_streaming_use_case import STTStreamingUseCase
 from core.services.tts_domain_service import TTSDomainService
 from core.services.stt_domain_service import STTDomainService
 
@@ -82,6 +85,10 @@ class ApplicationFactory:
         stt_service = STTDomainService(google_stt_client)
         flask_app.transcribe_speech_use_case = TranscribeSpeechUseCase(stt_service)
 
+        # Setup streaming STT use case
+        google_stt_streaming_client = GoogleSTTStreamingClient()
+        flask_app.stt_streaming_use_case = STTStreamingUseCase(google_stt_streaming_client)
+
     @staticmethod
     def _register_blueprints(flask_app):
         """Register blueprints with the Flask application."""
@@ -92,13 +99,22 @@ class ApplicationFactory:
         
         stt_blueprint = create_stt_blueprint(flask_app.transcribe_speech_use_case)
         flask_app.register_blueprint(stt_blueprint)
+        
+        # Register streaming STT blueprint
+        socketio_instance = get_socketio()
+        stt_streaming_blueprint = create_stt_streaming_blueprint(
+            socketio_instance, flask_app.stt_streaming_use_case
+        )
+        flask_app.register_blueprint(stt_streaming_blueprint)
 
 
 create_app = ApplicationFactory.create_app
 app = create_app()
 
 if __name__ == "__main__":
-    app.run(
+    socketio_instance = get_socketio()
+    socketio_instance.run(
+        app,
         host=app.config.get("HOST", "0.0.0.0"),
         port=app.config.get("PORT", 5003),
         debug=app.config.get("DEBUG", False),
