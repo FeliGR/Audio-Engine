@@ -18,9 +18,7 @@ from flask_socketio import SocketIO
 from adapters.loggers.logger_adapter import app_logger
 
 
-socketio = SocketIO(
-    async_mode="threading"
-)  
+socketio = SocketIO(async_mode="threading")
 
 
 def register_extensions(app: Flask) -> None:
@@ -36,14 +34,14 @@ def register_extensions(app: Flask) -> None:
         app (Flask): The Flask application instance to register extensions with.
     """
     if not app.config["TESTING"]:
-        
+
         cors_origins = app.config.get("CORS_ORIGINS", "*")
         if cors_origins == "*":
-            
+
             cors_origins = [
-                "http://localhost:3000",  
+                "http://localhost:3000",
                 "http://127.0.0.1:3000",
-                "http://localhost:3001",  
+                "http://localhost:3001",
                 "http://127.0.0.1:3001",
             ]
 
@@ -71,7 +69,6 @@ def register_extensions(app: Flask) -> None:
         )
         limiter.init_app(app)
 
-    
     socketio_cors_origins = ["http://localhost:3000", "http://127.0.0.1:3000"]
     if app.config.get("CORS_ORIGINS") and app.config["CORS_ORIGINS"] != "*":
         socketio_cors_origins = app.config["CORS_ORIGINS"]
