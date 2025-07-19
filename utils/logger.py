@@ -1,14 +1,3 @@
-"""
-Logger Module
-
-This module provides logging functionality for the TTS Service application.
-It offers a centralized logging setup with both console and file output options,
-along with configuration for log levels, rotation, and formatting.
-
-The module uses a factory pattern to create and cache logger instances, ensuring
-consistent logging behavior throughout the application.
-"""
-
 import logging
 import logging.handlers
 import sys
@@ -19,18 +8,6 @@ from config import Config
 
 
 class LoggerFactory:
-    """
-    Factory class for creating and managing logger instances.
-
-    This class implements the factory pattern to create, configure, and cache
-    logger instances. It ensures that loggers with the same name return the same
-    instance and provides options for console and file logging with various
-    configuration settings.
-
-    Attributes:
-        _loggers (Dict[str, logging.Logger]): Cache of created logger instances.
-    """
-
     _loggers: Dict[str, logging.Logger] = {}
 
     @classmethod
@@ -44,21 +21,6 @@ class LoggerFactory:
         max_bytes: int = 10485760,
         backup_count: int = 5,
     ) -> logging.Logger:
-        """
-        Get or create a logger with specified configuration.
-
-        Args:
-            name (str): The name of the logger. Defaults to "tts-service".
-            log_level (Union[str, int]): The logging level. Defaults to "INFO".
-            log_to_file (bool): Whether to log to a file. Defaults to False.
-            log_file_path (Optional[str]): Path to the log file. If None, a default path is used.
-            log_format (str): The format string for log messages.
-            max_bytes (int): Maximum size in bytes for log file before rotation. Defaults to 10MB.
-            backup_count (int): Number of backup log files to keep. Defaults to 5.
-
-        Returns:
-            logging.Logger: Configured logger instance.
-        """
         if name in cls._loggers:
             return cls._loggers[name]
 
@@ -106,19 +68,6 @@ class LoggerFactory:
 
 
 def setup_logger(config=None):
-    """
-    Set up and configure the application logger.
-
-    This function creates a logger for the application using configuration
-    parameters from the provided config object or the default Config.
-
-    Args:
-        config (object, optional): Configuration object with logging settings.
-            If None, the default Config is used.
-
-    Returns:
-        logging.Logger: Configured application logger.
-    """
     if config is None:
         config = Config
 

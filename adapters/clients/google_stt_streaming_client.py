@@ -1,12 +1,3 @@
-"""
-Google STT Streaming Client Module
-
-This module provides the implementation for Google Cloud Speech-to-Text streaming client.
-It handles real-time audio streaming, configuration, and bidirectional communication.
-"""
-
-import asyncio
-import json
 import queue
 import threading
 from typing import Dict, Any, Optional, Callable
@@ -15,7 +6,6 @@ from google.cloud import speech
 from google.api_core import exceptions as gcp_exceptions
 
 from adapters.loggers.logger_adapter import app_logger
-from core.domain.stt_model import WordTimestamp
 from core.interfaces.google_stt_streaming_client_interface import (
     GoogleSTTStreamingClientInterface,
 )

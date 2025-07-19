@@ -1,10 +1,3 @@
-"""
-STT Controller Module
-
-This module provides the Flask controller for STT transcription endpoints.
-It handles request validation, audio configuration, and response formatting.
-"""
-
 from typing import Tuple, Dict, Any
 
 from flask import Blueprint, request
@@ -18,8 +11,6 @@ from usecases.transcribe_speech_use_case import TranscribeSpeechUseCase
 
 
 class STTRequestSchema(Schema):
-    """Schema for validating STT request data."""
-
     audio_data = fields.String(required=True, validate=fields.Length(min=1))
     format = fields.String(missing="webm")
     language = fields.String(missing="en-US")
@@ -30,29 +21,10 @@ class STTRequestSchema(Schema):
 
 
 class STTController(STTControllerInterface):
-    """
-    STT Controller implementation.
-
-    Handles HTTP requests for speech-to-text transcription, including
-    request validation and response formatting.
-    """
-
     def __init__(self, use_case: TranscribeSpeechUseCase) -> None:
-        """
-        Initialize the STT controller.
-
-        Args:
-            use_case: The use case for speech transcription.
-        """
         self.use_case = use_case
 
     def transcribe_speech(self) -> Tuple[Dict[str, Any], int]:
-        """
-        Handle STT transcription requests.
-
-        Returns:
-            Tuple containing the response data and HTTP status code.
-        """
         try:
             data = request.get_json() or {}
             validated_data = STTRequestSchema().load(data)
@@ -119,21 +91,11 @@ class STTController(STTControllerInterface):
 
 
 def create_stt_blueprint(use_case: TranscribeSpeechUseCase) -> Blueprint:
-    """
-    Create and configure the STT blueprint.
-
-    Args:
-        use_case: The use case for speech transcription.
-
-    Returns:
-        Configured Flask blueprint for STT endpoints.
-    """
     blueprint = Blueprint("stt", __name__, url_prefix="/api/stt")
     controller = STTController(use_case)
 
     @blueprint.route("", methods=["POST"])
     def transcribe():
-        """STT transcription endpoint."""
         return controller.transcribe_speech()
 
     return blueprint

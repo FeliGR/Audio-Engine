@@ -1,13 +1,3 @@
-"""
-Google STT Endless Streaming Client Module
-
-This module provides an implementation for endless streaming speech recognition
-based on Google Cloud Speech-to-Text. It handles continuous audio streaming
-with automatic restarts to overcome the 4-minute limitation.
-
-Based on Google's endless streaming example but adapted for Flask-SocketIO.
-"""
-
 import asyncio
 import queue
 import threading
@@ -24,15 +14,9 @@ from core.interfaces.google_stt_streaming_client_interface import (
 
 
 class GoogleSTTEndlessStreamingClient(GoogleSTTStreamingClientInterface):
-    """
-    Endless streaming client that handles continuous speech recognition
-    with automatic restarts to overcome Google's streaming limitations.
-    """
-
-    # Audio parameters
-    STREAMING_LIMIT = 240000  # 4 minutes in milliseconds
+    STREAMING_LIMIT = 240000
     SAMPLE_RATE = 16000
-    CHUNK_SIZE = int(SAMPLE_RATE / 10)  # 100ms chunks
+    CHUNK_SIZE = int(SAMPLE_RATE / 10)
 
     FORMAT_MAPPING: Dict[str, Any] = {
         "webm": speech.RecognitionConfig.AudioEncoding.WEBM_OPUS,
@@ -47,22 +31,18 @@ class GoogleSTTEndlessStreamingClient(GoogleSTTStreamingClientInterface):
     }
 
     def __init__(self) -> None:
-        """Initialize the endless streaming client."""
         self.client = speech.SpeechClient()
         self.config: Optional[speech.RecognitionConfig] = None
         self.streaming_config: Optional[speech.StreamingRecognitionConfig] = None
 
-        # Audio buffering and timing
         self.audio_queue: Optional[queue.Queue] = None
         self.audio_input: List[bytes] = []
         self.last_audio_input: List[bytes] = []
 
-        # Streaming state
         self.is_streaming = False
         self._stop_event = threading.Event()
         self.closed = False
 
-        # Timing and restart logic
         self.start_time = self._get_current_time()
         self.restart_counter = 0
         self.result_end_time = 0
@@ -72,16 +52,13 @@ class GoogleSTTEndlessStreamingClient(GoogleSTTStreamingClientInterface):
         self.last_transcript_was_final = False
         self.new_stream = True
 
-        # Callback for results
         self.result_callback: Optional[Callable[[Dict[str, Any]], None]] = None
 
     @staticmethod
     def _get_current_time() -> int:
-        """Return current time in milliseconds."""
         return int(round(time.time() * 1000))
 
     def setup_config(self, config_data: Dict[str, Any]) -> None:
-        """Setup the recognition configuration."""
         encoding_str = config_data.get("encoding", "LINEAR16").upper()
         if encoding_str not in [
             "WEBM_OPUS",
@@ -94,7 +71,6 @@ class GoogleSTTEndlessStreamingClient(GoogleSTTStreamingClientInterface):
             encoding_str = "LINEAR16"
         encoding = getattr(speech.RecognitionConfig.AudioEncoding, encoding_str)
 
-        # Use parameters suitable for endless streaming
         sample_rate = config_data.get("sampleRateHertz", self.SAMPLE_RATE)
 
         self.config = speech.RecognitionConfig(
@@ -112,7 +88,7 @@ class GoogleSTTEndlessStreamingClient(GoogleSTTStreamingClientInterface):
         self.streaming_config = speech.StreamingRecognitionConfig(
             config=self.config,
             interim_results=config_data.get("interimResults", True),
-            single_utterance=False,  # Always False for endless streaming
+            single_utterance=False,
         )
 
         self.audio_queue = queue.Queue()
@@ -121,17 +97,14 @@ class GoogleSTTEndlessStreamingClient(GoogleSTTStreamingClientInterface):
         app_logger.info("Endless STT streaming configuration setup completed")
 
     def add_audio_chunk(self, audio_data: bytes) -> None:
-        """Add audio chunk to the processing queue."""
         if self.audio_queue and not self._stop_event.is_set() and not self.closed:
             self.audio_queue.put(audio_data)
             self.audio_input.append(audio_data)
 
     def _audio_generator(self):
-        """Generate audio chunks for streaming with restart logic."""
         while not self.closed and not self._stop_event.is_set():
             data = []
 
-            # Handle bridging logic for seamless restarts
             if self.new_stream and self.last_audio_input:
                 chunk_time = (
                     self.STREAMING_LIMIT / len(self.last_audio_input)
@@ -155,20 +128,17 @@ class GoogleSTTEndlessStreamingClient(GoogleSTTStreamingClientInterface):
                         (len(self.last_audio_input) - chunks_from_ms) * chunk_time
                     )
 
-                    # Add bridging audio from previous stream
                     for i in range(chunks_from_ms, len(self.last_audio_input)):
                         data.append(self.last_audio_input[i])
 
                 self.new_stream = False
 
-            # Get new audio chunk
             try:
                 chunk = self.audio_queue.get(timeout=0.1)
                 if chunk is None:
                     break
                 data.append(chunk)
 
-                # Get any additional buffered chunks
                 while True:
                     try:
                         chunk = self.audio_queue.get(block=False)
@@ -190,8 +160,7 @@ class GoogleSTTEndlessStreamingClient(GoogleSTTStreamingClientInterface):
     def _process_response(
         self, response, stream_start_time: int
     ) -> Optional[Dict[str, Any]]:
-        """Process a single streaming response."""
-        # Check if we need to restart due to time limit
+
         if self._get_current_time() - stream_start_time > self.STREAMING_LIMIT:
             return {"restart_needed": True}
 
@@ -204,7 +173,6 @@ class GoogleSTTEndlessStreamingClient(GoogleSTTStreamingClientInterface):
 
         transcript = result.alternatives[0].transcript
 
-        # Calculate timing
         result_seconds = (
             result.result_end_time.seconds if result.result_end_time.seconds else 0
         )
@@ -221,7 +189,6 @@ class GoogleSTTEndlessStreamingClient(GoogleSTTStreamingClientInterface):
             + (self.STREAMING_LIMIT * self.restart_counter)
         )
 
-        # Prepare result payload
         payload = {
             "type": "final_result" if result.is_final else "interim_result",
             "transcript": transcript,
@@ -234,7 +201,6 @@ class GoogleSTTEndlessStreamingClient(GoogleSTTStreamingClientInterface):
             self.is_final_end_time = self.result_end_time
             self.last_transcript_was_final = True
 
-            # Add word timestamps if available
             if (
                 hasattr(result.alternatives[0], "words")
                 and result.alternatives[0].words
@@ -255,7 +221,6 @@ class GoogleSTTEndlessStreamingClient(GoogleSTTStreamingClientInterface):
     async def start_streaming(
         self, result_callback: Callable[[Dict[str, Any]], None]
     ) -> None:
-        """Start endless streaming recognition."""
         if not self.config or not self.streaming_config:
             raise ValueError("Configuration not set. Call setup_config() first.")
 
@@ -287,11 +252,10 @@ class GoogleSTTEndlessStreamingClient(GoogleSTTStreamingClientInterface):
                     }
                 )
 
-                # Reset audio input for this stream
                 self.audio_input = []
 
                 try:
-                    # Create the request generator exactly like the working client
+
                     def request_generator():
                         for audio_chunk in self._audio_generator():
                             if self.closed or self._stop_event.is_set():
@@ -300,13 +264,10 @@ class GoogleSTTEndlessStreamingClient(GoogleSTTStreamingClientInterface):
                                 audio_content=audio_chunk
                             )
 
-                    # Call streaming_recognize exactly like the original working client
-                    # pylint: disable=too-many-positional-arguments
                     responses = self.client.streaming_recognize(
                         self.streaming_config, request_generator()
                     )
 
-                    # Process responses
                     for response in responses:
                         if self.closed or self._stop_event.is_set():
                             break
@@ -328,7 +289,7 @@ class GoogleSTTEndlessStreamingClient(GoogleSTTStreamingClientInterface):
                             "restart_count": self.restart_counter,
                         }
                     )
-                    # Continue to restart
+
                 except (ValueError, TypeError, RuntimeError) as e:
                     app_logger.error("Unexpected error during endless streaming: %s", e)
                     await result_callback(
@@ -338,9 +299,7 @@ class GoogleSTTEndlessStreamingClient(GoogleSTTStreamingClientInterface):
                             "restart_count": self.restart_counter,
                         }
                     )
-                    # Continue to restart
 
-                # Prepare for restart
                 if self.result_end_time > 0:
                     self.final_request_end_time = self.is_final_end_time
 
@@ -350,7 +309,6 @@ class GoogleSTTEndlessStreamingClient(GoogleSTTStreamingClientInterface):
                 self.restart_counter += 1
                 self.new_stream = True
 
-                # Small delay before restart
                 if not self.closed and not self._stop_event.is_set():
                     await asyncio.sleep(0.1)
 
@@ -364,7 +322,6 @@ class GoogleSTTEndlessStreamingClient(GoogleSTTStreamingClientInterface):
             app_logger.info("Endless STT streaming recognition stopped")
 
     def stop_streaming(self) -> None:
-        """Stop the endless streaming."""
         app_logger.info("Stopping endless STT streaming recognition")
         self.closed = True
         self._stop_event.set()
@@ -375,5 +332,4 @@ class GoogleSTTEndlessStreamingClient(GoogleSTTStreamingClientInterface):
         self.is_streaming = False
 
     def is_active(self) -> bool:
-        """Check if streaming is active."""
         return self.is_streaming and not self._stop_event.is_set() and not self.closed

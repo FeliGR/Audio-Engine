@@ -1,11 +1,3 @@
-"""
-STT Endless Streaming Controller Module
-
-This module provides the WebSocket controller for endless STT streaming endpoints.
-It handles WebSocket connections, continuous audio streaming, and manages automatic
-stream restarts for truly endless speech recognition.
-"""
-
 import threading
 from typing import Dict, Any
 
@@ -14,13 +6,10 @@ from flask_socketio import SocketIO, emit
 from marshmallow import Schema, fields, ValidationError
 
 from adapters.loggers.logger_adapter import app_logger
-from core.interfaces.stt_controller_interface import STTControllerInterface
 from usecases.stt_endless_streaming_use_case import STTEndlessStreamingUseCase
 
 
 class STTEndlessStreamingConfigSchema(Schema):
-    """Schema for validating endless STT streaming configuration data."""
-
     encoding = fields.String(missing="LINEAR16")
     sampleRateHertz = fields.Integer(missing=16000)
     languageCode = fields.String(missing="en-US")
@@ -31,24 +20,17 @@ class STTEndlessStreamingConfigSchema(Schema):
     model = fields.String(missing="latest_long")
 
 
-class STTEndlessStreamingController(STTControllerInterface):
+class STTEndlessStreamingController:
     """
     STT Endless Streaming Controller implementation.
 
     Handles WebSocket connections for continuous speech-to-text streaming
     with automatic restarts to overcome the 4-minute Google Cloud limitation.
     """
-
+    
     def __init__(
         self, socketio: SocketIO, use_case: STTEndlessStreamingUseCase
     ) -> None:
-        """
-        Initialize the endless STT streaming controller.
-
-        Args:
-            socketio: Flask-SocketIO instance for WebSocket handling.
-            use_case: Endless STT streaming use case for business logic.
-        """
         self.socketio = socketio
         self.use_case = use_case
         self.active_sessions: Dict[str, Dict[str, Any]] = {}
@@ -57,15 +39,12 @@ class STTEndlessStreamingController(STTControllerInterface):
         self._register_handlers()
 
     def _register_handlers(self) -> None:
-        """Register WebSocket event handlers for endless streaming."""
 
         @self.socketio.on("connect", namespace="/api/stt/endless")
         def handle_connect(auth=None):
-            """Handle client connection."""
             client_id = self._get_client_id()
             self.logger.info("Endless STT streaming client connected: %s", client_id)
 
-            # Initialize session
             self.active_sessions[client_id] = {"configured": False, "streaming": False}
 
             emit(
@@ -79,14 +58,11 @@ class STTEndlessStreamingController(STTControllerInterface):
 
         @self.socketio.on("disconnect", namespace="/api/stt/endless")
         def handle_disconnect():
-            """Handle client disconnection with graceful cleanup."""
             try:
                 client_id = self._get_client_id()
 
                 if client_id in self.active_sessions:
-                    # Stop the endless streaming session
                     self.use_case.stop_streaming()
-                    # Remove session
                     del self.active_sessions[client_id]
                     self.logger.info(
                         f"Endless streaming client {client_id} disconnected and session cleaned up"
@@ -100,7 +76,6 @@ class STTEndlessStreamingController(STTControllerInterface):
                 self.logger.error(
                     f"Error handling endless streaming disconnect: {str(e)}"
                 )
-                # Always remove session on error
                 try:
                     client_id = self._get_client_id()
                     if client_id in self.active_sessions:
@@ -110,27 +85,21 @@ class STTEndlessStreamingController(STTControllerInterface):
 
         @self.socketio.on("config", namespace="/api/stt/endless")
         def handle_config(data):
-            """Handle endless streaming configuration."""
             client_id = self._get_client_id()
 
             try:
-                # Validate configuration
+
                 config_data = self.schema.load(data.get("config", {}))
 
-                # Execute configuration
                 self.use_case.execute(config_data)
 
-                # Mark session as configured
                 if client_id in self.active_sessions:
                     self.active_sessions[client_id]["configured"] = True
 
-                    # Define async result callback for endless streaming
                     async def result_callback(result: Dict[str, Any]) -> None:
-                        """Send result to client via Socket.IO."""
                         try:
                             event_type = result.get("type", "result")
 
-                            # Map internal event types to client-friendly events
                             event_mapping = {
                                 "streaming_started": "endless_started",
                                 "stream_restart": "stream_restart",
@@ -142,7 +111,6 @@ class STTEndlessStreamingController(STTControllerInterface):
 
                             client_event = event_mapping.get(event_type, event_type)
 
-                            # Emit to the specific client
                             self.socketio.emit(
                                 client_event,
                                 result,
@@ -154,9 +122,7 @@ class STTEndlessStreamingController(STTControllerInterface):
                                 f"Error sending endless streaming result to client {client_id}: {str(e)}"
                             )
 
-                    # Start endless streaming in a background thread
                     def start_endless_streaming():
-                        """Start the endless streaming in a background thread."""
                         try:
                             import asyncio
 
@@ -207,7 +173,6 @@ class STTEndlessStreamingController(STTControllerInterface):
 
         @self.socketio.on("audio", namespace="/api/stt/endless")
         def handle_audio(data):
-            """Handle incoming audio data for endless streaming."""
             client_id = self._get_client_id()
 
             try:
@@ -231,8 +196,7 @@ class STTEndlessStreamingController(STTControllerInterface):
                     )
                     return
 
-                # Process audio data
-                audio_data = data.get("data")  # Frontend sends 'data' field
+                audio_data = data.get("data")
                 if not audio_data:
                     emit(
                         "error",
@@ -240,7 +204,6 @@ class STTEndlessStreamingController(STTControllerInterface):
                     )
                     return
 
-                # Convert array back to bytes
                 try:
                     if isinstance(audio_data, list):
                         audio_bytes = bytes(audio_data)
@@ -256,7 +219,6 @@ class STTEndlessStreamingController(STTControllerInterface):
                     )
                     return
 
-                # Pass audio to use case for endless processing
                 self.use_case.add_audio_data(audio_bytes)
 
             except Exception as e:
@@ -265,7 +227,6 @@ class STTEndlessStreamingController(STTControllerInterface):
 
         @self.socketio.on("stop", namespace="/api/stt/endless")
         def handle_stop():
-            """Handle stop endless streaming request."""
             client_id = self._get_client_id()
 
             if client_id in self.active_sessions:
@@ -291,7 +252,6 @@ class STTEndlessStreamingController(STTControllerInterface):
 
         @self.socketio.on("status", namespace="/api/stt/endless")
         def handle_status():
-            """Handle status request for endless streaming."""
             client_id = self._get_client_id()
 
             if client_id in self.active_sessions:
@@ -316,7 +276,6 @@ class STTEndlessStreamingController(STTControllerInterface):
                 )
 
     def _get_client_id(self) -> str:
-        """Get the current client's session ID."""
         from flask import request
 
         return request.sid
@@ -325,22 +284,11 @@ class STTEndlessStreamingController(STTControllerInterface):
 def create_stt_endless_streaming_blueprint(
     socketio: SocketIO, use_case: STTEndlessStreamingUseCase
 ) -> Blueprint:
-    """
-    Create and configure the endless STT streaming blueprint.
-
-    Args:
-        socketio: Flask-SocketIO instance.
-        use_case: Endless STT streaming use case instance.
-
-    Returns:
-        Blueprint: Configured endless streaming blueprint.
-    """
     blueprint = Blueprint("stt_endless_streaming", __name__)
     controller = STTEndlessStreamingController(socketio, use_case)
 
     @blueprint.route("/health", methods=["GET"])
     def health_check():
-        """Health check endpoint for endless streaming."""
         return {
             "status": "healthy",
             "service": "stt_endless_streaming",

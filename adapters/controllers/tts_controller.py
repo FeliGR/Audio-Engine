@@ -1,10 +1,3 @@
-"""
-TTS Controller Module
-
-This module provides the Flask controller for TTS synthesis endpoints.
-It handles request validation, voice configuration, and response formatting.
-"""
-
 from typing import Tuple, Dict, Any
 
 from flask import Blueprint, request, request
@@ -18,36 +11,15 @@ from usecases.synthesize_speech_use_case import SynthesizeSpeechUseCase
 
 
 class TTSRequestSchema(Schema):
-    """Schema for validating TTS request data."""
-
     text = fields.String(required=True, validate=fields.Length(min=1, max=5000))
     voiceConfig = fields.Dict(keys=fields.String(), values=fields.Raw(), missing={})
 
 
 class TTSController(TTSControllerInterface):
-    """
-    TTS Controller implementation.
-
-    Handles HTTP requests for text-to-speech synthesis, including
-    request validation and response formatting.
-    """
-
     def __init__(self, use_case: SynthesizeSpeechUseCase) -> None:
-        """
-        Initialize the TTS controller.
-
-        Args:
-            use_case: The use case for speech synthesis.
-        """
         self.use_case = use_case
 
     def synthesize_speech(self) -> Tuple[Dict[str, Any], int]:
-        """
-        Handle TTS synthesis requests.
-
-        Returns:
-            Tuple containing the response data and HTTP status code.
-        """
         try:
             data = request.get_json() or {}
             validated_data = TTSRequestSchema().load(data)
@@ -100,23 +72,12 @@ class TTSController(TTSControllerInterface):
 
 
 def create_tts_blueprint(use_case: SynthesizeSpeechUseCase) -> Blueprint:
-    """
-    Create and configure the TTS blueprint.
-
-    Args:
-        use_case: The use case for speech synthesis.
-
-    Returns:
-        Configured Flask blueprint for TTS endpoints.
-    """
     blueprint = Blueprint("tts", __name__, url_prefix="/api/tts")
     controller = TTSController(use_case)
 
     @blueprint.route("", methods=["POST", "OPTIONS"])
     def synthesize():
-        """TTS synthesis endpoint."""
         if request.method == "OPTIONS":
-            # Handle preflight request
 
             response = make_response()
             response.headers.add("Access-Control-Allow-Origin", "*")

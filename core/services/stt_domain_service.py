@@ -1,10 +1,3 @@
-"""
-STT Domain Service Module
-
-This module implements the core business logic for STT processing,
-including validation, error handling, and client coordination.
-"""
-
 from core.domain.exceptions import STTProcessingError, STTValidationError
 from core.domain.stt_model import STTRequest, STTResponse
 from core.interfaces.google_stt_client_interface import GoogleSTTClientInterface
@@ -12,32 +5,10 @@ from core.interfaces.stt_domain_service_interface import STTDomainServiceInterfa
 
 
 class STTDomainService(STTDomainServiceInterface):
-    """
-    Domain service for STT processing.
-
-    This service encapsulates the core business logic for speech-to-text
-    transcription, including request validation and error handling.
-    """
-
     def __init__(self, google_client: GoogleSTTClientInterface) -> None:
-        """
-        Initialize the STT domain service.
-
-        Args:
-            google_client: Google STT client implementation.
-        """
         self.google_client = google_client
 
     def process_stt_request(self, request: STTRequest) -> STTResponse:
-        """
-        Process an STT transcription request.
-
-        Args:
-            request: STT request containing audio data and configuration.
-
-        Returns:
-            STTResponse containing transcription result or error information.
-        """
         try:
 
             self._validate_request(request)
@@ -80,15 +51,6 @@ class STTDomainService(STTDomainServiceInterface):
             )
 
     def _validate_request(self, request: STTRequest) -> None:
-        """
-        Validate STT request parameters.
-
-        Args:
-            request: STT request to validate.
-
-        Raises:
-            STTValidationError: If validation fails.
-        """
         if not request.audio_data.strip():
             raise STTValidationError("Audio data cannot be empty")
 

@@ -15,6 +15,7 @@ from adapters.clients.google_stt_endless_streaming_client import (
 from adapters.controllers.tts_controller import create_tts_blueprint
 from adapters.controllers.stt_controller import create_stt_blueprint
 from adapters.controllers.stt_streaming_controller import create_stt_streaming_blueprint
+from adapters.controllers.stt_endless_streaming_controller import create_stt_endless_streaming_blueprint
 from adapters.loggers.logger_adapter import app_logger
 from app.extensions import register_extensions, get_socketio
 from app.handlers import (
@@ -89,12 +90,12 @@ class ApplicationFactory:
         flask_app.transcribe_speech_use_case = TranscribeSpeechUseCase(stt_service)
 
         google_stt_endless_streaming_client = GoogleSTTEndlessStreamingClient()
-        flask_app.stt_streaming_use_case = STTStreamingUseCase(
+        flask_app.stt_endless_streaming_use_case = STTEndlessStreamingUseCase(
             google_stt_endless_streaming_client
         )
 
         google_stt_original_streaming_client = GoogleSTTStreamingClient()
-        flask_app.stt_original_streaming_use_case = STTStreamingUseCase(
+        flask_app.stt_streaming_use_case = STTStreamingUseCase(
             google_stt_original_streaming_client
         )
 
@@ -114,6 +115,12 @@ class ApplicationFactory:
         )
         flask_app.register_blueprint(stt_streaming_blueprint)
 
+        # Register endless streaming blueprint
+        stt_endless_streaming_blueprint = create_stt_endless_streaming_blueprint(
+            socketio, flask_app.stt_endless_streaming_use_case
+        )
+        flask_app.register_blueprint(stt_endless_streaming_blueprint)
+
 
 create_app = ApplicationFactory.create_app
 app = create_app()
@@ -125,4 +132,5 @@ if __name__ == "__main__":
         host=app.config.get("HOST", "0.0.0.0"),
         port=app.config.get("PORT", 5003),
         debug=app.config.get("DEBUG", False),
+        allow_unsafe_werkzeug=True,
     )

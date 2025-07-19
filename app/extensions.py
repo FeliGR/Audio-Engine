@@ -1,14 +1,3 @@
-"""
-Flask Extensions Module
-
-This module handles the registration and configuration of Flask extensions used by the
-TTS Service application. It sets up middleware such as CORS and rate limiting to
-ensure the API is secure and resilient.
-
-Extensions are conditionally registered based on the application configuration,
-with some being disabled during testing to simplify the test environment.
-"""
-
 from flask import Flask
 from flask_cors import CORS
 from flask_limiter import Limiter
@@ -22,17 +11,6 @@ socketio = SocketIO(async_mode="threading")
 
 
 def register_extensions(app: Flask) -> None:
-    """
-    Register and initialize Flask extensions for the application.
-
-    This function configures and attaches middleware to the Flask application:
-      - CORS: Enables cross-origin requests with configurable origins.
-      - Limiter: Adds rate limiting to protect against abuse.
-      - SocketIO: Enables WebSocket support for real-time communication.
-
-    Args:
-        app (Flask): The Flask application instance to register extensions with.
-    """
     if not app.config["TESTING"]:
 
         cors_origins = app.config.get("CORS_ORIGINS", "*")
@@ -81,10 +59,4 @@ def register_extensions(app: Flask) -> None:
 
 
 def get_socketio() -> SocketIO:
-    """
-    Get the global SocketIO instance.
-
-    Returns:
-        SocketIO: The configured SocketIO instance.
-    """
     return socketio

@@ -1,10 +1,3 @@
-"""
-Google STT Client Module
-
-This module provides the implementation for Google Cloud Speech-to-Text client.
-It handles authentication, speech recognition, and response formatting.
-"""
-
 import base64
 import os
 from typing import Dict, Any
@@ -17,13 +10,6 @@ from core.interfaces.google_stt_client_interface import GoogleSTTClientInterface
 
 
 class GoogleSTTClient(GoogleSTTClientInterface):
-    """
-    Google Cloud Speech-to-Text client implementation.
-
-    This class provides the implementation for transcribing speech using
-    Google Cloud Speech-to-Text API.
-    """
-
     FORMAT_MAPPING: Dict[str, Any] = {
         "webm": speech.RecognitionConfig.AudioEncoding.WEBM_OPUS,
         "wav": speech.RecognitionConfig.AudioEncoding.LINEAR16,
@@ -34,26 +20,11 @@ class GoogleSTTClient(GoogleSTTClientInterface):
     }
 
     def __init__(self) -> None:
-        """
-        Initialize the Google STT client.
-
-        Sets up authentication using the GOOGLE_APPLICATION_CREDENTIALS
-        environment variable or defaults to 'tts-key.json'.
-        """
         creds = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "tts-key.json")
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = creds
         self.client = speech.SpeechClient()
 
     def transcribe_speech(self, request: STTRequest) -> STTResponse:
-        """
-        Transcribe speech from audio using Google Cloud STT.
-
-        Args:
-            request: STT request containing audio data and configuration.
-
-        Returns:
-            STTResponse containing the transcription or error information.
-        """
         try:
 
             audio_data = base64.b64decode(request.audio_data)

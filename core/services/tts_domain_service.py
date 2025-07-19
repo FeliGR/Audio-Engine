@@ -1,10 +1,3 @@
-"""
-TTS Domain Service Module
-
-This module implements the core business logic for TTS processing,
-including validation, error handling, and client coordination.
-"""
-
 from core.domain.exceptions import TTSProcessingError, TTSValidationError
 from core.domain.tts_model import TTSRequest, TTSResponse
 from core.interfaces.google_tts_client_interface import GoogleTTSClientInterface
@@ -12,32 +5,10 @@ from core.interfaces.tts_domain_service_interface import TTSDomainServiceInterfa
 
 
 class TTSDomainService(TTSDomainServiceInterface):
-    """
-    Domain service for TTS processing.
-
-    This service encapsulates the core business logic for text-to-speech
-    synthesis, including request validation and error handling.
-    """
-
     def __init__(self, google_client: GoogleTTSClientInterface) -> None:
-        """
-        Initialize the TTS domain service.
-
-        Args:
-            google_client: Google TTS client implementation.
-        """
         self.google_client = google_client
 
     def process_tts_request(self, request: TTSRequest) -> TTSResponse:
-        """
-        Process a TTS synthesis request.
-
-        Args:
-            request: TTS request containing text and voice configuration.
-
-        Returns:
-            TTSResponse containing synthesis result or error information.
-        """
         try:
 
             self._validate_request(request)
@@ -77,15 +48,6 @@ class TTSDomainService(TTSDomainServiceInterface):
             )
 
     def _validate_request(self, request: TTSRequest) -> None:
-        """
-        Validate TTS request parameters.
-
-        Args:
-            request: TTS request to validate.
-
-        Raises:
-            TTSValidationError: If validation fails.
-        """
         if not request.text.strip():
             raise TTSValidationError("Text cannot be empty")
 

@@ -1,10 +1,3 @@
-"""
-STT Streaming Controller Module
-
-This module provides the WebSocket controller for real-time STT streaming endpoints.
-It handles WebSocket connections, audio streaming, and real-time transcription results.
-"""
-
 import threading
 from typing import Dict, Any
 
@@ -18,8 +11,6 @@ from usecases.stt_streaming_use_case import STTStreamingUseCase
 
 
 class STTStreamingConfigSchema(Schema):
-    """Schema for validating STT streaming configuration data."""
-
     encoding = fields.String(missing="WEBM_OPUS")
     sampleRateHertz = fields.Integer(missing=48000)
     languageCode = fields.String(missing="en-US")
@@ -32,21 +23,7 @@ class STTStreamingConfigSchema(Schema):
 
 
 class STTStreamingController(STTControllerInterface):
-    """
-    STT Streaming Controller implementation.
-
-    Handles WebSocket connections for real-time speech-to-text streaming,
-    including configuration, audio data processing, and result broadcasting.
-    """
-
     def __init__(self, socketio: SocketIO, use_case: STTStreamingUseCase) -> None:
-        """
-        Initialize the STT streaming controller.
-
-        Args:
-            socketio: Flask-SocketIO instance for WebSocket handling.
-            use_case: STT streaming use case for business logic.
-        """
         self.socketio = socketio
         self.use_case = use_case
         self.active_sessions: Dict[str, Dict[str, Any]] = {}
@@ -55,11 +32,9 @@ class STTStreamingController(STTControllerInterface):
         self._register_handlers()
 
     def _register_handlers(self) -> None:
-        """Register WebSocket event handlers."""
 
         @self.socketio.on("connect", namespace="/api/stt/stream")
         def handle_connect(auth=None):
-            """Handle client connection."""
             client_id = self._get_client_id()
             self.logger.info("STT streaming client connected: %s", client_id)
 
@@ -69,7 +44,6 @@ class STTStreamingController(STTControllerInterface):
 
         @self.socketio.on("disconnect", namespace="/api/stt/stream")
         def handle_disconnect():
-            """Handle client disconnection with graceful cleanup."""
             try:
                 client_id = self._get_client_id()
 
@@ -98,7 +72,6 @@ class STTStreamingController(STTControllerInterface):
 
         @self.socketio.on("config", namespace="/api/stt/stream")
         def handle_config(data):
-            """Handle streaming configuration."""
             client_id = self._get_client_id()
 
             try:
@@ -111,7 +84,6 @@ class STTStreamingController(STTControllerInterface):
                     self.active_sessions[client_id]["configured"] = True
 
                     def result_callback(result: Dict[str, Any]) -> None:
-                        """Send result to client via Socket.IO."""
                         try:
                             event_type = result.get("type", "result")
 
@@ -156,7 +128,6 @@ class STTStreamingController(STTControllerInterface):
 
         @self.socketio.on("audio", namespace="/api/stt/stream")
         def handle_audio(data):
-            """Handle incoming audio data."""
             client_id = self._get_client_id()
 
             try:
@@ -205,7 +176,6 @@ class STTStreamingController(STTControllerInterface):
 
         @self.socketio.on("stop", namespace="/api/stt/stream")
         def handle_stop():
-            """Handle stop streaming request."""
             client_id = self._get_client_id()
 
             if client_id in self.active_sessions:
@@ -215,18 +185,15 @@ class STTStreamingController(STTControllerInterface):
                 emit("stopped", {"status": "stopped", "message": "Streaming stopped"})
 
     def transcribe_speech(self):
-        """Handle STT transcription requests (not used for streaming)."""
         return {"error": "Use streaming endpoint instead"}, 400
 
     def _get_client_id(self) -> str:
-        """Get the client ID from the current request context."""
         try:
             return request.sid
         except Exception:
             return "unknown"
 
     def _start_streaming_thread(self, client_id: str, callback) -> None:
-        """Start streaming in a background thread."""
         try:
             if client_id in self.active_sessions:
                 self.active_sessions[client_id]["streaming"] = True
@@ -274,16 +241,6 @@ class STTStreamingController(STTControllerInterface):
 def register_routes(
     socketio: SocketIO, use_case: STTStreamingUseCase
 ) -> STTStreamingController:
-    """
-    Register STT streaming routes.
-
-    Args:
-        socketio: Flask-SocketIO instance.
-        use_case: STT streaming use case.
-
-    Returns:
-        The STT streaming controller instance.
-    """
     controller = STTStreamingController(socketio, use_case)
     return controller
 
@@ -291,23 +248,12 @@ def register_routes(
 def create_stt_streaming_blueprint(
     socketio: SocketIO, use_case: STTStreamingUseCase
 ) -> Blueprint:
-    """
-    Create STT streaming blueprint with WebSocket support.
-
-    Args:
-        socketio: Flask-SocketIO instance.
-        use_case: STT streaming use case.
-
-    Returns:
-        Blueprint: Configured blueprint for STT streaming.
-    """
     blueprint = Blueprint("stt_streaming", __name__)
 
     STTStreamingController(socketio, use_case)
 
     @blueprint.route("/api/stt/stream/info", methods=["GET"])
     def stream_info():
-        """Get streaming endpoint information."""
         return {
             "endpoint": "/api/stt/stream",
             "protocol": "WebSocket",

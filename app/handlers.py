@@ -1,11 +1,3 @@
-"""
-Flask Application Handlers Module
-
-This module provides error handling, request hooks, and shutdown handlers for the
-TTS Service application. It includes functions for registering custom error handlers,
-request processing middleware to track performance metrics, and graceful shutdown procedures.
-"""
-
 import atexit
 import time
 
@@ -16,13 +8,6 @@ from adapters.loggers.logger_adapter import app_logger
 
 
 def register_error_handlers(app: Flask) -> None:
-    """
-    Register custom error handlers for the Flask application.
-
-    Args:
-        app (Flask): The Flask application instance.
-    """
-
     @app.errorhandler(400)
     def handle_bad_request(error):
         app_logger.error("Bad request: %s", error)
@@ -57,13 +42,6 @@ def register_error_handlers(app: Flask) -> None:
 
 
 def register_request_hooks(app: Flask) -> None:
-    """
-    Register request processing hooks for the Flask application.
-
-    Args:
-        app (Flask): The Flask application instance.
-    """
-
     @app.before_request
     def before_request():
         g.start_time = time.time()
@@ -84,13 +62,6 @@ def register_request_hooks(app: Flask) -> None:
 
 
 def register_shutdown_handlers(_app: Flask) -> None:
-    """
-    Register application shutdown handlers.
-
-    Args:
-        app (Flask): The Flask application instance.
-    """
-
     def on_exit():
         app_logger.info("TTS Service Application is shutting down")
 
