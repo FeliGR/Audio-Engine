@@ -21,13 +21,7 @@ class STTEndlessStreamingConfigSchema(Schema):
 
 
 class STTEndlessStreamingController:
-    """
-    STT Endless Streaming Controller implementation.
 
-    Handles WebSocket connections for continuous speech-to-text streaming
-    with automatic restarts to overcome the 4-minute Google Cloud limitation.
-    """
-    
     def __init__(
         self, socketio: SocketIO, use_case: STTEndlessStreamingUseCase
     ) -> None:

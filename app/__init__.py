@@ -15,7 +15,9 @@ from adapters.clients.google_stt_endless_streaming_client import (
 from adapters.controllers.tts_controller import create_tts_blueprint
 from adapters.controllers.stt_controller import create_stt_blueprint
 from adapters.controllers.stt_streaming_controller import create_stt_streaming_blueprint
-from adapters.controllers.stt_endless_streaming_controller import create_stt_endless_streaming_blueprint
+from adapters.controllers.stt_endless_streaming_controller import (
+    create_stt_endless_streaming_blueprint,
+)
 from adapters.loggers.logger_adapter import app_logger
 from app.extensions import register_extensions, get_socketio
 from app.handlers import (

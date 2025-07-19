@@ -4,7 +4,7 @@ from app.extensions import get_socketio
 
 def main():
     app = create_app()
-    
+
     socketio = get_socketio()
 
     socketio.run(
