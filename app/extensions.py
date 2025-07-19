@@ -18,7 +18,9 @@ from flask_socketio import SocketIO
 from adapters.loggers.logger_adapter import app_logger
 
 
-socketio = SocketIO(cors_allowed_origins="*", async_mode="threading")
+socketio = SocketIO(
+    async_mode="threading"
+)  
 
 
 def register_extensions(app: Flask) -> None:
@@ -34,13 +36,30 @@ def register_extensions(app: Flask) -> None:
         app (Flask): The Flask application instance to register extensions with.
     """
     if not app.config["TESTING"]:
+        
+        cors_origins = app.config.get("CORS_ORIGINS", "*")
+        if cors_origins == "*":
+            
+            cors_origins = [
+                "http://localhost:3000",  
+                "http://127.0.0.1:3000",
+                "http://localhost:3001",  
+                "http://127.0.0.1:3001",
+            ]
+
         CORS(
             app,
             resources={
-                r"/api/*": {"origins": app.config.get("CORS_ORIGINS", "*")},
-                r"/health": {"origins": app.config.get("CORS_ORIGINS", "*")},
-                r"/": {"origins": app.config.get("CORS_ORIGINS", "*")},
+                r"/api/*": {
+                    "origins": cors_origins,
+                    "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+                    "allow_headers": ["Content-Type", "Authorization", "Accept"],
+                    "supports_credentials": True,
+                },
+                r"/health": {"origins": cors_origins, "methods": ["GET", "OPTIONS"]},
+                r"/": {"origins": cors_origins, "methods": ["GET", "OPTIONS"]},
             },
+            supports_credentials=True,
         )
 
         limiter = Limiter(
@@ -52,7 +71,14 @@ def register_extensions(app: Flask) -> None:
         )
         limiter.init_app(app)
 
-    socketio.init_app(app)
+    
+    socketio_cors_origins = ["http://localhost:3000", "http://127.0.0.1:3000"]
+    if app.config.get("CORS_ORIGINS") and app.config["CORS_ORIGINS"] != "*":
+        socketio_cors_origins = app.config["CORS_ORIGINS"]
+
+    socketio.init_app(
+        app, cors_allowed_origins=socketio_cors_origins, async_mode="threading"
+    )
 
     app_logger.debug("Extensions registered")
 

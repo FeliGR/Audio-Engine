@@ -19,7 +19,7 @@ services:
       - GOOGLE_APPLICATION_CREDENTIALS=/app/tts-key.json
     healthcheck:
       test: ["CMD","curl","-f","http://localhost:5003/health"]
-      interval: 30s
+      interval: 3600s
       timeout: 10s
       retries: 3
       start_period: 40s

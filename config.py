@@ -49,6 +49,9 @@ class DevelopmentConfig(Config):
 
     DEBUG = True
     LOG_LEVEL = "DEBUG"
+    CORS_ORIGINS = os.environ.get(
+        "CORS_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000"
+    )
 
 
 class ProductionConfig(Config):

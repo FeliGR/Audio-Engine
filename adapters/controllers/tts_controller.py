@@ -7,9 +7,9 @@ It handles request validation, voice configuration, and response formatting.
 
 from typing import Tuple, Dict, Any
 
-from flask import Blueprint, request
+from flask import Blueprint, request, request
 from marshmallow import Schema, fields, ValidationError
-
+from flask import make_response
 from adapters.loggers.logger_adapter import app_logger
 from app.api_response import ApiResponse
 from core.domain.tts_model import TTSRequest, VoiceConfig
@@ -112,9 +112,22 @@ def create_tts_blueprint(use_case: SynthesizeSpeechUseCase) -> Blueprint:
     blueprint = Blueprint("tts", __name__, url_prefix="/api/tts")
     controller = TTSController(use_case)
 
-    @blueprint.route("", methods=["POST"])
+    @blueprint.route("", methods=["POST", "OPTIONS"])
     def synthesize():
         """TTS synthesis endpoint."""
+        if request.method == "OPTIONS":
+            # Handle preflight request
+
+            response = make_response()
+            response.headers.add("Access-Control-Allow-Origin", "*")
+            response.headers.add(
+                "Access-Control-Allow-Headers", "Content-Type,Authorization"
+            )
+            response.headers.add(
+                "Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS"
+            )
+            return response
+
         return controller.synthesize_speech()
 
     return blueprint
