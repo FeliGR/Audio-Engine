@@ -29,7 +29,7 @@ class Config:
     TESTING = os.environ.get("TESTING", "False").lower() == "true"
     LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
 
-    API_RATE_LIMIT = int(os.environ.get("API_RATE_LIMIT", "100"))
+    API_RATE_LIMIT = int(os.environ.get("API_RATE_LIMIT", "500"))
     SECRET_KEY = os.environ.get("SECRET_KEY", "development-key-change-in-production")
 
     VERSION = "0.1.0"
@@ -37,7 +37,7 @@ class Config:
     PORT = int(os.environ.get("PORT", 5003))
     CORS_ORIGINS = os.environ.get("CORS_ORIGINS", "*")
 
-    DEFAULT_RATE_LIMITS = ["100 per day", "10 per minute"]
+    DEFAULT_RATE_LIMITS = ["1000 per day", "500 per minute"]
 
 
 class DevelopmentConfig(Config):

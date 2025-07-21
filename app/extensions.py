@@ -42,7 +42,7 @@ def register_extensions(app: Flask) -> None:
             key_func=get_remote_address,
             storage_uri="memory://",
             default_limits=app.config.get(
-                "DEFAULT_RATE_LIMITS", ["100 per day", "10 per minute"]
+                "DEFAULT_RATE_LIMITS", ["1000 per day", "500 per minute"]
             ),
         )
         limiter.init_app(app)
