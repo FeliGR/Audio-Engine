@@ -9,15 +9,9 @@ from flask import Flask
 from adapters.clients.google_tts_client import GoogleTTSClient
 from adapters.clients.google_stt_client import GoogleSTTClient
 from adapters.clients.google_stt_streaming_client import GoogleSTTStreamingClient
-from adapters.clients.google_stt_endless_streaming_client import (
-    GoogleSTTEndlessStreamingClient,
-)
 from adapters.controllers.tts_controller import create_tts_blueprint
 from adapters.controllers.stt_controller import create_stt_blueprint
 from adapters.controllers.stt_streaming_controller import create_stt_streaming_blueprint
-from adapters.controllers.stt_endless_streaming_controller import (
-    create_stt_endless_streaming_blueprint,
-)
 from adapters.loggers.logger_adapter import app_logger
 from app.extensions import register_extensions, get_socketio
 from app.handlers import (
@@ -30,7 +24,6 @@ from config import Config, DevelopmentConfig, ProductionConfig
 from usecases.synthesize_speech_use_case import SynthesizeSpeechUseCase
 from usecases.transcribe_speech_use_case import TranscribeSpeechUseCase
 from usecases.stt_streaming_use_case import STTStreamingUseCase
-from usecases.stt_endless_streaming_use_case import STTEndlessStreamingUseCase
 from core.services.tts_domain_service import TTSDomainService
 from core.services.stt_domain_service import STTDomainService
 
@@ -91,11 +84,6 @@ class ApplicationFactory:
         stt_service = STTDomainService(google_stt_client)
         flask_app.transcribe_speech_use_case = TranscribeSpeechUseCase(stt_service)
 
-        google_stt_endless_streaming_client = GoogleSTTEndlessStreamingClient()
-        flask_app.stt_endless_streaming_use_case = STTEndlessStreamingUseCase(
-            google_stt_endless_streaming_client
-        )
-
         google_stt_original_streaming_client = GoogleSTTStreamingClient()
         flask_app.stt_streaming_use_case = STTStreamingUseCase(
             google_stt_original_streaming_client
@@ -116,12 +104,6 @@ class ApplicationFactory:
             socketio, flask_app.stt_streaming_use_case
         )
         flask_app.register_blueprint(stt_streaming_blueprint)
-
-        # Register endless streaming blueprint
-        stt_endless_streaming_blueprint = create_stt_endless_streaming_blueprint(
-            socketio, flask_app.stt_endless_streaming_use_case
-        )
-        flask_app.register_blueprint(stt_endless_streaming_blueprint)
 
 
 create_app = ApplicationFactory.create_app

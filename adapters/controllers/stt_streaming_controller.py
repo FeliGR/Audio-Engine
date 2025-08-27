@@ -252,31 +252,4 @@ def create_stt_streaming_blueprint(
 
     STTStreamingController(socketio, use_case)
 
-    @blueprint.route("/api/stt/stream/info", methods=["GET"])
-    def stream_info():
-        return {
-            "endpoint": "/api/stt/stream",
-            "protocol": "WebSocket",
-            "events": {
-                "config": "Send streaming configuration",
-                "audio": "Send audio data chunks",
-                "stop": "Stop streaming",
-                "interim_result": "Receive interim transcription",
-                "final_result": "Receive final transcription",
-                "end_of_utterance": "End of speech detected",
-                "error": "Error messages",
-            },
-            "sample_config": {
-                "encoding": "WEBM_OPUS",
-                "sampleRateHertz": 48000,
-                "languageCode": "en-US",
-                "interimResults": True,
-                "singleUtterance": False,
-                "enableWordTimeOffsets": False,
-                "maxAlternatives": 1,
-                "enableAutomaticPunctuation": True,
-                "model": "latest_long",
-            },
-        }
-
     return blueprint
