@@ -12,13 +12,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - FLASK_ENV=production
-      - DEBUG=False
-      - LOG_LEVEL=INFO
-      - SECRET_KEY=${SECRET_KEY:-change-this-in-production}
-      - PORT=5003
-      - HOST=0.0.0.0
-      - CORS_ORIGINS=*
-      - API_RATE_LIMIT=500
+      - LOG_LEVEL=DEBUG
       - GOOGLE_APPLICATION_CREDENTIALS=/app/audio-engine-key.json
     networks:
       - persona_network
