@@ -30,7 +30,6 @@ class Config:
     LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
 
     API_RATE_LIMIT = int(os.environ.get("API_RATE_LIMIT", "500"))
-    SECRET_KEY = os.environ.get("SECRET_KEY", "development-key-change-in-production")
 
     VERSION = "0.1.0"
     HOST = os.environ.get("HOST", "0.0.0.0")
