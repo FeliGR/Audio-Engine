@@ -1,6 +1,6 @@
-# TTS Engine
+# Audio Engine
 
-A high-performance text-to-speech and speech-to-text engine with real-time streaming capabilities.
+A high-performance audio processing engine with text-to-speech and speech-to-text capabilities, featuring real-time streaming.
 
 ## Features
 
@@ -15,8 +15,8 @@ A high-performance text-to-speech and speech-to-text engine with real-time strea
 ## Quick Start
 
 ```bash
-git clone https://github.com/your-username/tts-engine.git
-cd tts-engine
+git clone https://github.com/your-username/Audio-Engine.git
+cd Audio-Engine
 pip install -r requirements.txt
 python -m app
 ```
@@ -53,21 +53,25 @@ Make sure to place your Google Cloud credentials file as `tts-key.json` in the p
 ## API Endpoints
 
 ### Health Check
+
 ```
 GET /health
 ```
 
 ### Text-to-Speech
+
 ```
 POST /api/tts
 ```
 
 ### Speech-to-Text
+
 ```
 POST /api/stt
 ```
 
 ### WebSocket Events
+
 - `stt_streaming`: Real-time speech transcription
 - `stt_endless_streaming`: Continuous speech recognition
 
@@ -78,4 +82,4 @@ POST /api/stt
 - Google Cloud TTS 2.16.3
 - Google Cloud STT 2.21.0
 - Marshmallow 3.20.1
-- Eventlet 0.33.3 
+- Eventlet 0.33.3
