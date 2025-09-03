@@ -1,8 +1,8 @@
-from typing import Tuple, Dict, Any
+from typing import Any, Dict, Tuple
 
-from flask import Blueprint, request, request
-from marshmallow import Schema, fields, ValidationError
-from flask import make_response
+from flask import Blueprint, make_response, request
+from marshmallow import Schema, ValidationError, fields
+
 from adapters.loggers.logger_adapter import app_logger
 from app.api_response import ApiResponse
 from core.domain.tts_model import TTSRequest, VoiceConfig

@@ -1,9 +1,9 @@
 import base64
 import os
-from typing import Dict, Any
+from typing import Any, Dict
 
-from google.cloud import speech
 from google.api_core import exceptions as gcp_exceptions
+from google.cloud import speech
 
 from core.domain.stt_model import STTRequest, STTResponse, WordTimestamp
 from core.interfaces.google_stt_client_interface import GoogleSTTClientInterface

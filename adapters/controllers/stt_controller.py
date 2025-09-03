@@ -1,7 +1,7 @@
-from typing import Tuple, Dict, Any
+from typing import Any, Dict, Tuple
 
 from flask import Blueprint, request
-from marshmallow import Schema, fields, ValidationError
+from marshmallow import Schema, ValidationError, fields
 
 from adapters.loggers.logger_adapter import app_logger
 from app.api_response import ApiResponse

@@ -4,16 +4,17 @@ Flask Application Factory Module for TTS-Engine.
 
 import os
 from typing import Type
+
 from flask import Flask
 
-from adapters.clients.google_tts_client import GoogleTTSClient
 from adapters.clients.google_stt_client import GoogleSTTClient
 from adapters.clients.google_stt_streaming_client import GoogleSTTStreamingClient
-from adapters.controllers.tts_controller import create_tts_blueprint
+from adapters.clients.google_tts_client import GoogleTTSClient
 from adapters.controllers.stt_controller import create_stt_blueprint
 from adapters.controllers.stt_streaming_controller import create_stt_streaming_blueprint
+from adapters.controllers.tts_controller import create_tts_blueprint
 from adapters.loggers.logger_adapter import app_logger
-from app.extensions import register_extensions, get_socketio
+from app.extensions import get_socketio, register_extensions
 from app.handlers import (
     register_error_handlers,
     register_request_hooks,
@@ -21,11 +22,11 @@ from app.handlers import (
 )
 from app.routes import register_routes
 from config import Config, DevelopmentConfig, ProductionConfig
+from core.services.stt_domain_service import STTDomainService
+from core.services.tts_domain_service import TTSDomainService
+from usecases.stt_streaming_use_case import STTStreamingUseCase
 from usecases.synthesize_speech_use_case import SynthesizeSpeechUseCase
 from usecases.transcribe_speech_use_case import TranscribeSpeechUseCase
-from usecases.stt_streaming_use_case import STTStreamingUseCase
-from core.services.tts_domain_service import TTSDomainService
-from core.services.stt_domain_service import STTDomainService
 
 
 class ApplicationFactory:

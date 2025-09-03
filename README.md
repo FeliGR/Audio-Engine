@@ -4,13 +4,15 @@ A high-performance audio processing engine with text-to-speech and speech-to-tex
 
 ## Features
 
-- **Text-to-Speech**: Convert text to natural speech with customizable voice parameters
-- **Speech-to-Text**: Transcribe audio to text with multiple format support
-- **Real-time Streaming**: Live audio transcription with WebSocket support
-- **Endless Streaming**: Continuous speech recognition for long-form audio
-- **Voice Configuration**: Multilingual TTS with adjustable speaking rate, pitch, and gender
-- **Word Timestamps**: Precise timing information for transcribed words
-- **Multi-format Audio**: Support for webm, wav, mp3, flac, and opus formats
+- **Text-to-Speech**: Convert text to natural speech with Google Cloud TTS integration
+- **Voice Customization**: Multilingual TTS with configurable speaking rate, pitch, and gender selection
+- **Speech-to-Text**: Base64 audio transcription with confidence scores and error handling
+- **Recognition Models**: Support for latest_long, latest_short, phone_call, and video models
+- **Real-time Streaming**: WebSocket-based live audio transcription at `/api/stt/stream`
+- **Word Timestamps**: Optional precise timing information for transcribed words
+- **Multi-format Audio**: Support for webm, wav, mp3, flac, opus, and amr formats
+- **Automatic Punctuation**: Built-in punctuation and interim results for streaming
+- **Health Monitoring**: Health check endpoint for service status monitoring
 
 ## Quick Start
 
@@ -26,14 +28,10 @@ python -m app
 Create a `.env` file:
 
 ```env
-DEBUG=False
-LOG_LEVEL=INFO
-SECRET_KEY=your_secret_key_here
-HOST=0.0.0.0
-PORT=5003
-CORS_ORIGINS=*
-API_RATE_LIMIT=500
-GOOGLE_APPLICATION_CREDENTIALS=path/to/your/google-credentials.json
+PYTHONUNBUFFERED=1
+FLASK_ENV=production
+LOG_LEVEL=DEBUG
+GOOGLE_APPLICATION_CREDENTIALS=/app/audio-engine-key.json
 ```
 
 ### Google Cloud Setup
@@ -53,27 +51,48 @@ Make sure to place your Google Cloud credentials file as `audio-engine-key.json`
 ## API Endpoints
 
 ### Health Check
-
 ```
 GET /health
 ```
+Returns service health status and timestamp.
+
+### Service Info
+```
+GET /
+```
+Returns service information, version, and available endpoints.
 
 ### Text-to-Speech
-
 ```
 POST /api/tts
 ```
+Convert text to speech with customizable voice parameters. Supports OPTIONS for CORS.
 
 ### Speech-to-Text
-
 ```
 POST /api/stt
 ```
+Transcribe base64-encoded audio to text with confidence scores and optional word timestamps.
 
-### WebSocket Events
+### WebSocket Streaming (STT)
+```
+WebSocket: /api/stt/stream
+```
 
-- `stt_streaming`: Real-time speech transcription
-- `stt_endless_streaming`: Continuous speech recognition
+**Events:**
+- `connect` - Establish streaming connection
+- `config` - Configure streaming parameters (encoding, language, etc.)
+- `audio` - Send audio data chunks for real-time transcription
+- `stop` - Stop streaming session
+- `disconnect` - Close connection and cleanup
+
+**Response Events:**
+- `connected` - Connection established
+- `configured` - Configuration accepted
+- `interim_result` - Partial transcription results
+- `final_result` - Final transcription with confidence and timestamps
+- `end_of_utterance` - Speech segment completed
+- `error` - Error messages
 
 ## Tech Stack
 

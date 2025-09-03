@@ -1,9 +1,9 @@
 import threading
-from typing import Dict, Any
+from typing import Any, Dict
 
-from flask import request, Blueprint
+from flask import Blueprint, request
 from flask_socketio import SocketIO, emit
-from marshmallow import Schema, fields, ValidationError
+from marshmallow import Schema, ValidationError, fields
 
 from adapters.loggers.logger_adapter import app_logger
 from core.interfaces.stt_controller_interface import STTControllerInterface

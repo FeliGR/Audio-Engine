@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+
 from core.domain.stt_model import STTRequest, STTResponse
 
 

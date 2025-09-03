@@ -1,9 +1,9 @@
 import queue
 import threading
-from typing import Dict, Any, Optional, Callable
+from typing import Any, Callable, Dict, Optional
 
-from google.cloud import speech
 from google.api_core import exceptions as gcp_exceptions
+from google.cloud import speech
 
 from adapters.loggers.logger_adapter import app_logger
 from core.interfaces.google_stt_streaming_client_interface import (

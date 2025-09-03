@@ -1,8 +1,8 @@
 import base64
 import os
 
-from google.cloud import texttospeech
 from google.api_core import exceptions as gcp_exceptions
+from google.cloud import texttospeech
 
 from core.domain.tts_model import TTSRequest, TTSResponse
 from core.interfaces.google_tts_client_interface import GoogleTTSClientInterface

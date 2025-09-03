@@ -1,5 +1,5 @@
 import asyncio
-from typing import Dict, Any, Callable
+from typing import Any, Callable, Dict
 
 from core.interfaces.google_stt_streaming_client_interface import (
     GoogleSTTStreamingClientInterface,

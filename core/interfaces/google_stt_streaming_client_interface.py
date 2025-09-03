@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Dict, Any, Callable
+from typing import Any, Callable, Dict
 
 
 class GoogleSTTStreamingClientInterface(ABC):

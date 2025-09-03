@@ -6,7 +6,6 @@ from flask_socketio import SocketIO
 
 from adapters.loggers.logger_adapter import app_logger
 
-
 socketio = SocketIO(async_mode="threading")
 
 
