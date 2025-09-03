@@ -48,7 +48,7 @@ GOOGLE_APPLICATION_CREDENTIALS=path/to/your/google-credentials.json
 docker-compose up -d
 ```
 
-Make sure to place your Google Cloud credentials file as `tts-key.json` in the project root.
+Make sure to place your Google Cloud credentials file as `audio-engine-key.json` in the project root.
 
 ## API Endpoints
 

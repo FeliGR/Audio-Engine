@@ -20,7 +20,7 @@ class GoogleSTTClient(GoogleSTTClientInterface):
     }
 
     def __init__(self) -> None:
-        creds = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "tts-key.json")
+        creds = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "audio-engine-key.json")
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = creds
         self.client = speech.SpeechClient()
 

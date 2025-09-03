@@ -1,11 +1,14 @@
-version: '3.8'
 services:
-  tts-engine:
-    build: .
+  audio-engine:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: audio-engine
+    restart: unless-stopped
     ports:
       - "5003:5003"
     volumes:
-      - ./tts-key.json:/app/tts-key.json:ro
+      - ./audio-engine-key.json:/app/audio-engine-key.json:ro
     environment:
       - PYTHONUNBUFFERED=1
       - FLASK_ENV=production
@@ -16,17 +19,19 @@ services:
       - HOST=0.0.0.0
       - CORS_ORIGINS=*
       - API_RATE_LIMIT=500
-      - GOOGLE_APPLICATION_CREDENTIALS=/app/tts-key.json
-    healthcheck:
-      test: ["CMD","curl","-f","http://localhost:5003/health"]
-      interval: 3600s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-    restart: unless-stopped
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/audio-engine-key.json
     networks:
-      - tts-network
+      - persona_network
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - wget -qO- http://localhost:5003/health >/dev/null 2>&1 || curl -fsS http://localhost:5003/health || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
 
 networks:
-  tts-network:
-    driver: bridge
+  persona_network:
+    external: true
+    name: persona_network

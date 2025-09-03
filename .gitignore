@@ -71,3 +71,4 @@ docker-compose.override.yml
 
 # Google Cloud credentials
 tts-key.json
+audio-engine-key.json
